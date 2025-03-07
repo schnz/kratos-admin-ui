@@ -3,9 +3,10 @@
 import { Box, Typography, Grid, Paper } from '@mui/material';
 import { AdminLayout } from '@/components/templates/Admin/AdminLayout';
 import { useQuery } from '@tanstack/react-query';
-import { listIdentities, listSessions, listIdentitySchemas } from '@/lib/api/kratos/client';
+import { listIdentities, listSessions, listIdentitySchemas, checkKratosReady } from '@/lib/api/kratos/client';
 import { ProtectedRoute } from '@/features/auth/components/ProtectedRoute';
 import { UserRole } from '@/config/users';
+import { useState, useEffect } from 'react';
 
 export default function Dashboard() {
   const { data: identities, isLoading: identitiesLoading } = useQuery({
@@ -31,6 +32,18 @@ export default function Dashboard() {
       return response.data;
     },
   })
+
+  const [kratosStatus, setKratosStatus] = useState(false);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      checkKratosReady().then(status => setKratosStatus(status));
+      checkKratosReady().then(status => console.log(status));
+    }, 5000);
+
+    // Cleanup the interval on component unmount
+    return () => clearInterval(interval);
+  }, []);
 
   return (
     <ProtectedRoute requiredRole={UserRole.VIEWER}>
@@ -117,7 +130,7 @@ export default function Dashboard() {
                   API Status
                 </Typography>
                 <Typography component="p" variant="h4">
-                  {identitiesLoading ? '...' : 'Connected'}
+                  {kratosStatus? 'Connected' : 'Disconnected'}
                 </Typography>
                 <Typography color="text.secondary" sx={{ flex: 1 }}>
                   Kratos API connection

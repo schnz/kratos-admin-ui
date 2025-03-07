@@ -15,6 +15,7 @@ import {
   IdentityApiGetIdentitySchemaRequest,
   IdentityApiListIdentitySchemasRequest,
   IdentityApiCreateRecoveryLinkForIdentityRequest,
+  MetadataApi,
 } from '@ory/kratos-client';
 import { getAdminUrl, getPublicUrl } from './config';
 
@@ -43,6 +44,7 @@ const getPublicConfiguration = (): Configuration => {
 // Instantiate API clients using IdentityApi
 const adminApi = new IdentityApi(getAdminConfiguration());
 const publicApi = new IdentityApi(getPublicConfiguration());
+const metadataApi = new MetadataApi(getPublicConfiguration());
 
 // Admin API wrappers
 export async function listIdentities(params: IdentityApiListIdentitiesRequest = {}) {
@@ -84,6 +86,36 @@ export async function createRecoveryLinkForIdentity(params: IdentityApiCreateRec
 // Public API methods
 export async function listIdentitySchemas(params: IdentityApiListIdentitySchemasRequest = {}) {
   return await publicApi.listIdentitySchemas(params);
+}
+
+// Metadata API methods
+export async function checkKratosReady():Promise<boolean> {
+    // Check if alive
+    try {
+      const aliveResponse = await metadataApi.isAlive();
+      if (aliveResponse.status !== 200) {
+        return false;
+      }
+    } catch (error) {
+      return false;
+    }
+
+    // Check if ready
+    try {
+      const readyResponse = await metadataApi.isReady();
+      
+      if (readyResponse.status !== 200) {
+        return false;
+      }
+    } catch (error) {
+      return false;
+    }
+    return true;
+}
+
+export async function getKratosVersion():Promise<string> {
+  const versionResponse = await metadataApi.getVersion();
+  return versionResponse.data.version;
 }
 
 // Error handling utilities
