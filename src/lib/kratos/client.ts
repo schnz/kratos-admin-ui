@@ -15,7 +15,6 @@ import {
   IdentityApiGetIdentitySchemaRequest,
   IdentityApiListIdentitySchemasRequest,
   IdentityApiCreateRecoveryLinkForIdentityRequest,
-  IdentityApiListSessionsRequest,
 } from '@ory/kratos-client';
 import { getAdminUrl, getPublicUrl } from './config';
 

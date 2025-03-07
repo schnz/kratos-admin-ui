@@ -1,5 +1,4 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { Identity, Session } from '@ory/kratos-client';
 import { 
   listIdentities,
   getIdentity,
@@ -10,7 +9,6 @@ import {
   getIdentitySchema,
   listIdentitySchemas,
   createRecoveryLinkForIdentity,
-  toSession
 } from '../kratos/client';
 
 // Identity hooks
@@ -133,16 +131,6 @@ export const useIdentitySessions = (identityId: string) => {
       return data;
     },
     enabled: !!identityId,
-  });
-};
-
-export const useSession = () => {
-  return useQuery({
-    queryKey: ['session'],
-    queryFn: async () => {
-      const { data } = await toSession();
-      return data;
-    },
   });
 };
 
