@@ -19,7 +19,8 @@ import {
   Card,
   CardContent,
   Grid,
-  Chip
+  Chip,
+  CircularProgress
 } from '@mui/material';
 import { Visibility, VisibilityOff, AdminPanelSettings, RemoveRedEye } from '@mui/icons-material';
 import { useLogin } from '@/lib/stores/authStore';
@@ -75,38 +76,39 @@ export default function LoginPage() {
     <Container component="main" maxWidth="sm">
       <Box
         sx={{
-          marginTop: 8,
           display: 'flex',
           flexDirection: 'column',
           alignItems: 'center',
+          justifyContent: 'center',
+          minHeight: '100vh',
+          py: 4,
         }}
       >
-        <Paper 
-          elevation={3} 
-          sx={{ 
-            p: 4, 
-            width: '100%', 
-            borderRadius: 2,
+        <Paper
+          elevation={3}
+          sx={{
+            p: 4,
             display: 'flex',
             flexDirection: 'column',
             alignItems: 'center',
+            width: '100%',
+            borderRadius: 2,
           }}
         >
-          <Typography component="h1" variant="h5" sx={{ mb: 3, fontWeight: 'bold' }}>
-            Kratos Admin UI
+          <Typography component="h1" variant="h4" gutterBottom>
+            Ory Kratos Admin
           </Typography>
-          
-          <Typography component="h2" variant="h6" sx={{ mb: 3 }}>
-            Sign In
+          <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
+            Sign in to your account
           </Typography>
-          
+
           {error && (
-            <Alert severity="error" sx={{ width: '100%', mb: 2 }}>
+            <Alert severity="error" sx={{ width: '100%', mb: 3 }}>
               {error}
             </Alert>
           )}
-          
-          <Box component="form" onSubmit={handleSubmit} sx={{ mt: 1, width: '100%' }}>
+
+          <Box component="form" onSubmit={handleSubmit} sx={{ width: '100%' }}>
             <TextField
               margin="normal"
               required
@@ -120,9 +122,8 @@ export default function LoginPage() {
               onChange={(e) => setUsername(e.target.value)}
               disabled={loading}
             />
-            
-            <FormControl sx={{ mt: 2, width: '100%' }} variant="outlined">
-              <InputLabel htmlFor="password">Password *</InputLabel>
+            <FormControl variant="outlined" margin="normal" required fullWidth>
+              <InputLabel htmlFor="password">Password</InputLabel>
               <OutlinedInput
                 id="password"
                 type={showPassword ? 'text' : 'password'}
@@ -141,66 +142,64 @@ export default function LoginPage() {
                   </InputAdornment>
                 }
                 label="Password"
-                required
               />
             </FormControl>
-            
             <Button
               type="submit"
               fullWidth
               variant="contained"
-              sx={{ mt: 3, mb: 2 }}
+              sx={{ mt: 3, mb: 2, py: 1.5 }}
               disabled={loading}
             >
-              {loading ? 'Signing in...' : 'Sign In'}
+              {loading ? <CircularProgress size={24} /> : 'Sign In'}
             </Button>
-            
-            <Divider sx={{ my: 3 }}>
-              <Typography variant="body2" color="text.secondary">
-                Available Demo Accounts
-              </Typography>
-            </Divider>
-            
-            <Grid container spacing={2}>
-              {USERS.map((user) => (
-                <Grid item xs={12} sm={6} key={user.username}>
-                  <Card 
-                    variant="outlined" 
-                    sx={{ 
-                      cursor: 'pointer',
-                      '&:hover': { borderColor: 'primary.main' }
-                    }}
-                    onClick={() => setDemoCredentials(user.username, user.password)}
-                  >
-                    <CardContent>
-                      <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
-                        {user.role === UserRole.ADMIN ? (
-                          <AdminPanelSettings color="primary" sx={{ mr: 1 }} />
-                        ) : (
-                          <RemoveRedEye color="secondary" sx={{ mr: 1 }} />
-                        )}
-                        <Typography variant="subtitle1" sx={{ fontWeight: 'bold' }}>
-                          {user.displayName}
-                        </Typography>
-                      </Box>
-                      <Chip 
-                        label={user.role} 
-                        size="small" 
-                        color={user.role === UserRole.ADMIN ? "primary" : "secondary"}
-                        sx={{ mb: 1 }}
-                      />
-                      <Typography variant="body2" color="text.secondary">
-                        Username: <strong>{user.username}</strong>
-                      </Typography>
-                      <Typography variant="body2" color="text.secondary">
-                        Password: <strong>{user.password}</strong>
-                      </Typography>
-                    </CardContent>
-                  </Card>
-                </Grid>
-              ))}
-            </Grid>
           </Box>
+
+          <Divider sx={{ width: '100%', my: 3 }}>
+            <Typography variant="body2" color="text.secondary">
+              Demo Accounts
+            </Typography>
+          </Divider>
+
+          <Grid container spacing={2}>
+            {USERS.map((user) => (
+              <Grid item xs={12} sm={6} key={user.username}>
+                <Card 
+                  variant="outlined" 
+                  sx={{ 
+                    cursor: 'pointer',
+                    '&:hover': { borderColor: 'primary.main' }
+                  }}
+                  onClick={() => setDemoCredentials(user.username, user.password)}
+                >
+                  <CardContent>
+                    <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
+                      {user.role === UserRole.ADMIN ? (
+                        <AdminPanelSettings color="primary" sx={{ mr: 1 }} />
+                      ) : (
+                        <RemoveRedEye color="secondary" sx={{ mr: 1 }} />
+                      )}
+                      <Typography variant="subtitle1" sx={{ fontWeight: 'bold' }}>
+                        {user.displayName}
+                      </Typography>
+                    </Box>
+                    <Chip 
+                      label={user.role} 
+                      size="small" 
+                      color={user.role === UserRole.ADMIN ? "primary" : "secondary"}
+                      sx={{ mb: 1 }}
+                    />
+                    <Typography variant="body2" color="text.secondary">
+                      Username: <strong>{user.username}</strong>
+                    </Typography>
+                    <Typography variant="body2" color="text.secondary">
+                      Password: <strong>{user.password}</strong>
+                    </Typography>
+                  </CardContent>
+                </Card>
+              </Grid>
+            ))}
+          </Grid>
         </Paper>
       </Box>
     </Container>

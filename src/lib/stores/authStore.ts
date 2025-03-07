@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { persist } from 'zustand/middleware';
+import { persist, createJSONStorage } from 'zustand/middleware';
 import { findUserByCredentials, UserCredentials, UserRole } from '../config/users';
 
 // Define user interface
@@ -14,9 +14,11 @@ export interface User {
 interface AuthState {
   user: User | null;
   isAuthenticated: boolean;
+  isLoading: boolean; 
   login: (username: string, password: string) => Promise<boolean>;
   logout: () => void;
   hasPermission: (requiredRole: UserRole) => boolean;
+  setLoading: (isLoading: boolean) => void; 
 }
 
 // Create auth store with persistence
@@ -25,6 +27,9 @@ export const useAuthStore = create<AuthState>()(
     (set, get) => ({
       user: null,
       isAuthenticated: false,
+      isLoading: true, 
+      
+      setLoading: (isLoading: boolean) => set({ isLoading }),
       
       login: async (username: string, password: string) => {
         // Find user from our config
@@ -64,6 +69,12 @@ export const useAuthStore = create<AuthState>()(
     {
       name: 'kratos-admin-auth',
       partialize: (state) => ({ user: state.user, isAuthenticated: state.isAuthenticated }),
+      onRehydrateStorage: () => (state) => {
+        // When storage is rehydrated, set loading to false
+        if (state) {
+          state.setLoading(false);
+        }
+      },
     }
   )
 );
@@ -71,6 +82,7 @@ export const useAuthStore = create<AuthState>()(
 // Hooks for easier access to auth store
 export const useUser = () => useAuthStore((state) => state.user);
 export const useIsAuthenticated = () => useAuthStore((state) => state.isAuthenticated);
+export const useIsAuthLoading = () => useAuthStore((state) => state.isLoading);
 export const useLogin = () => useAuthStore((state) => state.login);
 export const useLogout = () => useAuthStore((state) => state.logout);
 export const useHasPermission = () => useAuthStore((state) => state.hasPermission);

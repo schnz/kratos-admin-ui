@@ -16,23 +16,17 @@ export function ProtectedRoute({ children, requiredRole }: ProtectedRouteProps) 
   const hasPermission = useHasPermission();
   
   useEffect(() => {
-    // If not authenticated, redirect to login
-    if (!isAuthenticated) {
-      router.push('/login');
-      return;
-    }
-    
-    // If role is required and user doesn't have permission, redirect to dashboard
-    if (requiredRole && !hasPermission(requiredRole)) {
+    // Only check role-based permissions since authentication is handled by AuthProvider
+    if (isAuthenticated && requiredRole && !hasPermission(requiredRole)) {
       router.push('/dashboard');
     }
   }, [isAuthenticated, hasPermission, requiredRole, router]);
   
-  // If not authenticated or doesn't have required permission, don't render children
-  if (!isAuthenticated || (requiredRole && !hasPermission(requiredRole))) {
+  // If role is required and user doesn't have permission, don't render children
+  if (requiredRole && !hasPermission(requiredRole)) {
     return null;
   }
   
-  // Render children if authenticated and has required permission
+  // Render children
   return <>{children}</>;
 }
