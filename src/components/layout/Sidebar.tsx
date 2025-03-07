@@ -10,12 +10,14 @@ import {
   LogoutOutlined 
 } from '@mui/icons-material';
 import { Divider, Drawer, List, ListItem, ListItemButton, ListItemIcon, ListItemText, Typography, Box } from '@mui/material';
-import { useLogout } from '@/lib/stores/authStore';
+import { useLogout, useUser } from '@/lib/stores/authStore';
+import { UserRole } from '@/lib/config/users';
 
 interface NavItem {
   title: string;
   path: string;
   icon: React.ReactNode;
+  requiredRole?: UserRole;
 }
 
 const mainNavItems: NavItem[] = [
@@ -23,36 +25,28 @@ const mainNavItems: NavItem[] = [
     title: 'Dashboard',
     path: '/dashboard',
     icon: <DashboardOutlined />,
+    requiredRole: UserRole.VIEWER,
   },
   {
     title: 'Identities',
     path: '/identities',
     icon: <PeopleOutlined />,
+    requiredRole: UserRole.ADMIN,
   },
   {
     title: 'Sessions',
     path: '/sessions',
     icon: <SecurityOutlined />,
+    requiredRole: UserRole.ADMIN,
   },
   {
     title: 'Schemas',
     path: '/schemas',
     icon: <DescriptionOutlined />,
+    requiredRole: UserRole.VIEWER,
   },
 ];
 
-const secondaryNavItems: NavItem[] = [
-  {
-    title: 'Settings',
-    path: '/settings',
-    icon: <SettingsOutlined />,
-  },
-  {
-    title: 'API Keys',
-    path: '/api-keys',
-    icon: <KeyOutlined />,
-  },
-];
 
 interface SidebarProps {
   open: boolean;
@@ -62,10 +56,24 @@ interface SidebarProps {
 export function Sidebar({ open, onClose }: SidebarProps) {
   const pathname = usePathname();
   const logout = useLogout();
+  const user = useUser();
   
   const isActive = (path: string) => {
     return pathname === path || pathname?.startsWith(`${path}/`);
   };
+
+  const hasRequiredRole = (requiredRole?: UserRole) => {
+    if (!requiredRole) return true;
+    if (!user) return false;
+    
+    // Admin can access everything
+    if (user.role === UserRole.ADMIN) return true;
+    
+    // Viewer can only access viewer-level items
+    return user.role === requiredRole;
+  };
+
+  const filteredMainNavItems = mainNavItems.filter(item => hasRequiredRole(item.requiredRole));
 
   return (
     <Drawer
@@ -91,37 +99,7 @@ export function Sidebar({ open, onClose }: SidebarProps) {
       <Divider />
       <Box sx={{ flexGrow: 1, py: 2 }}>
         <List>
-          {mainNavItems.map((item) => (
-            <ListItem key={item.title} disablePadding>
-              <ListItemButton
-                component={Link}
-                href={item.path}
-                selected={isActive(item.path)}
-                sx={{
-                  py: 1.5,
-                  borderRadius: 1,
-                  mx: 1,
-                  '&.Mui-selected': {
-                    backgroundColor: 'primary.50',
-                    color: 'primary.main',
-                    '&:hover': {
-                      backgroundColor: 'primary.100',
-                    },
-                    '& .MuiListItemIcon-root': {
-                      color: 'primary.main',
-                    },
-                  },
-                }}
-              >
-                <ListItemIcon>{item.icon}</ListItemIcon>
-                <ListItemText primary={item.title} />
-              </ListItemButton>
-            </ListItem>
-          ))}
-        </List>
-        <Divider sx={{ my: 2 }} />
-        <List>
-          {secondaryNavItems.map((item) => (
+          {filteredMainNavItems.map((item) => (
             <ListItem key={item.title} disablePadding>
               <ListItemButton
                 component={Link}

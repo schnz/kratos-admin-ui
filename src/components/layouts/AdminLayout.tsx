@@ -1,9 +1,12 @@
 import React, { ReactNode, useState } from 'react';
 import { Box, CssBaseline, AppBar, Toolbar, Typography, Drawer, List, Divider, ListItem, ListItemButton, ListItemIcon, ListItemText, IconButton, useMediaQuery, useTheme as useMuiTheme, Avatar, Menu, MenuItem, Tooltip, Badge } from '@mui/material';
-import { Dashboard, Person, Schema, VpnKey, Menu as MenuIcon, Notifications, ChevronLeft, ChevronRight, DarkMode, LightMode, People } from '@mui/icons-material';
+import { Dashboard, Person, Schema, VpnKey, Menu as MenuIcon, Notifications, ChevronLeft, ChevronRight, DarkMode, LightMode, People, Logout } from '@mui/icons-material';
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import { useTheme } from '@/lib/providers/ThemeProvider';
+import { useUser, useLogout } from '@/lib/stores/authStore';
+import { UserRole } from '@/lib/config/users';
+import { ProtectedRoute } from '@/components/auth/ProtectedRoute';
 
 const drawerWidth = 240;
 
@@ -18,12 +21,15 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
   const isMobile = useMediaQuery(muiTheme.breakpoints.down('md'));
   const pathname = usePathname();
   const { theme: currentTheme, toggleTheme } = useTheme();
+  const user = useUser();
+  const logout = useLogout();
+  const router = useRouter();
   
   const menuItems = [
     { text: 'Dashboard', icon: <Dashboard />, path: '/dashboard' },
-    { text: 'Identities', icon: <People />, path: '/identities' },
+    { text: 'Identities', icon: <People />, path: '/identities', adminOnly: true },
     { text: 'Schemas', icon: <Schema />, path: '/schemas' },
-    { text: 'Sessions', icon: <Person />, path: '/sessions' },
+    { text: 'Sessions', icon: <Person />, path: '/sessions', adminOnly: true },
   ];
   
   const handleDrawerToggle = () => {
@@ -38,107 +44,124 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
     setAnchorEl(null);
   };
 
+  const handleLogout = () => {
+    handleClose();
+    logout();
+    router.push('/login');
+  };
+
+  // Filter menu items based on user role
+  const filteredMenuItems = menuItems.filter(item => 
+    !item.adminOnly || (user && user.role === UserRole.ADMIN)
+  );
+
   return (
-    <Box sx={{ display: 'flex' }}>
-      <CssBaseline />
-      <AppBar
-        position="fixed"
-        sx={{
-          width: { sm: `calc(100% - ${drawerWidth}px)` },
-          ml: { sm: `${drawerWidth}px` },
-          boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
-        }}
-      >
-        <Toolbar sx={{ justifyContent: 'space-between' }}>
-          <IconButton
-            color="inherit"
-            aria-label="open drawer"
-            onClick={handleDrawerToggle}
-            edge="start"
-            sx={{ mr: 2, display: { sm: 'none' } }}
-          >
-            <MenuIcon />
-          </IconButton>
-          <Box>
-            <Typography variant="h6" noWrap component="div" sx={{ display: { xs: 'none', sm: 'block' } }}>
-              Kratos Admin
-            </Typography>
-          </Box>
-          <Box sx={{ display: 'flex', alignItems: 'center' }}>
-            <Tooltip title="Notifications">
-              <IconButton color="inherit" sx={{ mr: 1 }}>
-                <Badge badgeContent={4} color="error">
-                  <Notifications />
-                </Badge>
-              </IconButton>
-            </Tooltip>
-            <Tooltip title="Toggle theme">
-              <IconButton color="inherit" sx={{ mr: 2 }} onClick={toggleTheme}>
-                {currentTheme === 'dark' ? <LightMode /> : <DarkMode />}
-              </IconButton>
-            </Tooltip>
+    <ProtectedRoute>
+      <Box sx={{ display: 'flex' }}>
+        <CssBaseline />
+        <AppBar
+          position="fixed"
+          sx={{
+            width: { sm: `calc(100% - ${drawerWidth}px)` },
+            ml: { sm: `${drawerWidth}px` },
+            boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
+          }}
+        >
+          <Toolbar sx={{ justifyContent: 'space-between' }}>
             <IconButton
-              size="large"
-              aria-label="account of current user"
-              aria-controls="menu-appbar"
-              aria-haspopup="true"
-              onClick={handleMenu}
               color="inherit"
+              aria-label="open drawer"
+              onClick={handleDrawerToggle}
+              edge="start"
+              sx={{ mr: 2, display: { sm: 'none' } }}
             >
-              <Avatar sx={{ width: 32, height: 32 }}>A</Avatar>
+              <MenuIcon />
             </IconButton>
-            <Menu
-              id="menu-appbar"
-              anchorEl={anchorEl}
-              anchorOrigin={{
-                vertical: 'bottom',
-                horizontal: 'right',
-              }}
-              keepMounted
-              transformOrigin={{
-                vertical: 'top',
-                horizontal: 'right',
-              }}
-              open={Boolean(anchorEl)}
-              onClose={handleClose}
-            >
-              <MenuItem onClick={handleClose}>Profile</MenuItem>
-              <MenuItem onClick={handleClose}>Settings</MenuItem>
-              <MenuItem onClick={handleClose}>Logout</MenuItem>
-            </Menu>
-          </Box>
-        </Toolbar>
-      </AppBar>
-      <Box
-        component="nav"
-        sx={{ width: { sm: drawerWidth }, flexShrink: { sm: 0 } }}
-        aria-label="mailbox folders"
-      >
-        {/* Mobile drawer */}
+            <Box>
+              <Typography variant="h6" noWrap component="div" sx={{ display: { xs: 'none', sm: 'block' } }}>
+                Kratos Admin
+              </Typography>
+            </Box>
+            <Box sx={{ display: 'flex', alignItems: 'center' }}>
+              <Tooltip title="Notifications">
+                <IconButton color="inherit" sx={{ mr: 1 }}>
+                  <Badge badgeContent={4} color="error">
+                    <Notifications />
+                  </Badge>
+                </IconButton>
+              </Tooltip>
+              <Tooltip title="Toggle theme">
+                <IconButton color="inherit" sx={{ mr: 2 }} onClick={toggleTheme}>
+                  {currentTheme === 'dark' ? <LightMode /> : <DarkMode />}
+                </IconButton>
+              </Tooltip>
+              <IconButton
+                size="large"
+                aria-label="account of current user"
+                aria-controls="menu-appbar"
+                aria-haspopup="true"
+                onClick={handleMenu}
+                color="inherit"
+              >
+                <Avatar sx={{ width: 32, height: 32, bgcolor: 'primary.main' }}>
+                  {user?.displayName?.charAt(0) || <Person />}
+                </Avatar>
+              </IconButton>
+              <Menu
+                id="menu-appbar"
+                anchorEl={anchorEl}
+                anchorOrigin={{
+                  vertical: 'top',
+                  horizontal: 'right',
+                }}
+                keepMounted
+                transformOrigin={{
+                  vertical: 'top',
+                  horizontal: 'right',
+                }}
+                open={Boolean(anchorEl)}
+                onClose={handleClose}
+              >
+                <MenuItem onClick={handleClose} component={Link} href="/profile">
+                  <Person fontSize="small" sx={{ mr: 1 }} />
+                  Profile
+                </MenuItem>
+                <MenuItem onClick={handleLogout}>
+                  <Logout fontSize="small" sx={{ mr: 1 }} />
+                  Logout
+                </MenuItem>
+              </Menu>
+            </Box>
+          </Toolbar>
+        </AppBar>
         <Drawer
-          variant="temporary"
-          open={isMobile && open}
+          variant={isMobile ? 'temporary' : 'permanent'}
+          open={isMobile ? open : true}
           onClose={handleDrawerToggle}
-          ModalProps={{
-            keepMounted: true, // Better open performance on mobile.
-          }}
           sx={{
-            display: { xs: 'block', sm: 'none' },
-            '& .MuiDrawer-paper': {
-              boxSizing: 'border-box',
-              width: drawerWidth,
-            },
+            width: drawerWidth,
+            flexShrink: 0,
+            [`& .MuiDrawer-paper`]: { width: drawerWidth, boxSizing: 'border-box' },
           }}
         >
-          {/* Drawer content */}
-          <Toolbar>
+          <Toolbar
+            sx={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              px: [1],
+            }}
+          >
             <Typography variant="h6" noWrap component="div">
               Kratos Admin
             </Typography>
+            <IconButton onClick={handleDrawerToggle}>
+              {muiTheme.direction === 'rtl' ? <ChevronRight /> : <ChevronLeft />}
+            </IconButton>
           </Toolbar>
           <Divider />
           <List>
-            {menuItems.map((item) => (
+            {filteredMenuItems.map((item) => (
               <ListItem key={item.text} disablePadding>
                 <ListItemButton
                   component={Link}
@@ -153,56 +176,32 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
               </ListItem>
             ))}
           </List>
-        </Drawer>
-        
-        {/* Desktop drawer */}
-        <Drawer
-          variant="permanent"
-          sx={{
-            display: { xs: 'none', sm: 'block' },
-            '& .MuiDrawer-paper': { 
-              boxSizing: 'border-box', 
-              width: drawerWidth,
-            },
-          }}
-          open
-        >
-          <Toolbar>
-            <Typography variant="h6" noWrap component="div">
-              Kratos Admin
-            </Typography>
-          </Toolbar>
           <Divider />
           <List>
-            {menuItems.map((item) => (
-              <ListItem key={item.text} disablePadding>
-                <ListItemButton
-                  component={Link}
-                  href={item.path}
-                  selected={pathname === item.path}
-                >
-                  <ListItemIcon>
-                    {item.icon}
-                  </ListItemIcon>
-                  <ListItemText primary={item.text} />
-                </ListItemButton>
-              </ListItem>
-            ))}
+            <ListItem disablePadding>
+              <ListItemButton onClick={handleLogout}>
+                <ListItemIcon>
+                  <Logout />
+                </ListItemIcon>
+                <ListItemText primary="Logout" />
+              </ListItemButton>
+            </ListItem>
           </List>
         </Drawer>
+        <Box
+          component="main"
+          sx={{
+            flexGrow: 1,
+            p: 3,
+            width: { sm: `calc(100% - ${drawerWidth}px)` },
+            minHeight: '100vh',
+            backgroundColor: 'background.default',
+          }}
+        >
+          <Toolbar />
+          {children}
+        </Box>
       </Box>
-      <Box
-        component="main"
-        sx={{
-          flexGrow: 1,
-          p: 3,
-          width: { sm: `calc(100% - ${drawerWidth}px)` },
-          minHeight: '100vh',
-        }}
-      >
-        <Toolbar />
-        {children}
-      </Box>
-    </Box>
+    </ProtectedRoute>
   );
 };

@@ -8,7 +8,8 @@ import {
   MenuItem, 
   Toolbar, 
   Tooltip, 
-  Typography 
+  Typography,
+  Chip
 } from '@mui/material';
 import { 
   Notifications as NotificationsIcon, 
@@ -68,6 +69,14 @@ export function Header({ onSidebarToggle }: HeaderProps) {
         </Typography>
         <Box sx={{ flexGrow: 1 }} />
         <Box sx={{ display: 'flex', alignItems: 'center' }}>
+          {user && (
+            <Chip
+              label={`${user.displayName} (${user.role})`}
+              variant="outlined"
+              size="small"
+              sx={{ mr: 2, display: { xs: 'none', sm: 'flex' } }}
+            />
+          )}
           <Tooltip title="Notifications">
             <IconButton color="inherit" size="large">
               <NotificationsIcon />
@@ -85,7 +94,7 @@ export function Header({ onSidebarToggle }: HeaderProps) {
               <Avatar 
                 sx={{ width: 32, height: 32, bgcolor: 'primary.main' }}
               >
-                <PersonIcon />
+                {user?.displayName.charAt(0) || <PersonIcon />}
               </Avatar>
             </IconButton>
           </Tooltip>

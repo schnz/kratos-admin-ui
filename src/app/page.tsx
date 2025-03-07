@@ -2,28 +2,20 @@
 
 import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { Box, CircularProgress, Typography } from '@mui/material';
+import { useIsAuthenticated } from '@/lib/stores/authStore';
 
 export default function Home() {
   const router = useRouter();
+  const isAuthenticated = useIsAuthenticated();
 
   useEffect(() => {
-    // Redirect to the dashboard
-    router.push('/dashboard');
-  }, [router]);
+    // Redirect to dashboard if authenticated, otherwise to login
+    if (isAuthenticated) {
+      router.push('/dashboard');
+    } else {
+      router.push('/login');
+    }
+  }, [isAuthenticated, router]);
 
-  return (
-    <Box sx={{ 
-      display: 'flex', 
-      flexDirection: 'column', 
-      alignItems: 'center', 
-      justifyContent: 'center', 
-      minHeight: '100vh'
-    }}>
-      <CircularProgress size={40} />
-      <Typography sx={{ mt: 2 }}>
-        Redirecting to dashboard...
-      </Typography>
-    </Box>
-  );
+  return null; // No UI needed as we're redirecting
 }

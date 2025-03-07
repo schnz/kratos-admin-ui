@@ -4,6 +4,7 @@ import { ReactNode } from 'react';
 import { QueryProvider } from './QueryProvider';
 import { ThemeProvider } from './ThemeProvider';
 import { CustomMuiThemeProvider } from './MuiThemeProvider';
+import { AuthProvider } from './AuthProvider';
 
 interface ProvidersProps {
   children: ReactNode;
@@ -17,7 +18,9 @@ export default function Providers({ children }: ProvidersProps) {
     <QueryProvider>
       <ThemeProvider>
         <CustomMuiThemeProvider>
-          {children}
+          <AuthProvider>
+            {children}
+          </AuthProvider>
         </CustomMuiThemeProvider>
       </ThemeProvider>
     </QueryProvider>
