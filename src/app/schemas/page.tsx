@@ -1,11 +1,11 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Box, Typography, Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, TablePagination, Button, Dialog, DialogTitle, DialogContent, DialogActions, CircularProgress, Chip } from '@mui/material';
+import { Box, Typography, Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, TablePagination, Button, Dialog, DialogTitle, DialogContent, DialogActions, CircularProgress, Chip, Card, CardContent, Grid, IconButton, Tooltip, TextField, InputAdornment } from '@mui/material';
 import { AdminLayout } from '../../components/layouts/AdminLayout';
 import { useQuery } from '@tanstack/react-query';
 import { listIdentitySchemas, getIdentitySchema } from '../../lib/kratos/client';
-import { Code, Description } from '@mui/icons-material';
+import { Code, Description, Search, Refresh, Add, FilterList, MoreVert, Close } from '@mui/icons-material';
 
 // Define the schema interface based on the provided example
 interface SchemaItem {
@@ -27,8 +27,9 @@ export default function SchemasPage() {
   const [schemaContent, setSchemaContent] = useState<any>(null);
   const [schemaLoading, setSchemaLoading] = useState(false);
   const [parsedSchemas, setParsedSchemas] = useState<SchemaItem[]>([]);
+  const [searchQuery, setSearchQuery] = useState('');
 
-  const { data: schemasResponse, isLoading, error } = useQuery({
+  const { data: schemasResponse, isLoading, error, refetch } = useQuery({
     queryKey: ['schemas'],
     queryFn: async () => {
       const response = await listIdentitySchemas();
@@ -103,104 +104,274 @@ export default function SchemasPage() {
     return traits ? Object.keys(traits).length : 0;
   };
 
+  // Filter schemas based on search query
+  const filteredSchemas = parsedSchemas.filter(schema => {
+    const title = getSchemaTitle(schema).toLowerCase();
+    const id = schema.id.toLowerCase();
+    const query = searchQuery.toLowerCase();
+    return title.includes(query) || id.includes(query);
+  });
+
   return (
     <AdminLayout>
-      <Box sx={{ p: 3 }}>
-        <Typography variant="h4" gutterBottom>
-          Identity Schemas
-        </Typography>
-        
-        <Paper sx={{ width: '100%', mb: 2 }}>
-          {isLoading ? (
-            <Box sx={{ display: 'flex', justifyContent: 'center', p: 3 }}>
-              <CircularProgress />
-            </Box>
-          ) : error ? (
-            <Box sx={{ p: 3 }}>
-              <Typography color="error">Error loading schemas. Please try again later.</Typography>
-              <pre>{JSON.stringify(error, null, 2)}</pre>
-            </Box>
-          ) : (
-            <>
-              <TableContainer>
-                <Table sx={{ minWidth: 750 }} aria-labelledby="schemasTable">
-                  <TableHead>
-                    <TableRow>
-                      <TableCell>ID</TableCell>
-                      <TableCell>Title</TableCell>
-                      <TableCell>Type</TableCell>
-                      <TableCell>Properties</TableCell>
-                      <TableCell>Actions</TableCell>
-                    </TableRow>
-                  </TableHead>
-                  <TableBody>
-                    {parsedSchemas.length === 0 ? (
-                      <TableRow>
-                        <TableCell colSpan={5} align="center">
-                          No schemas found
-                          {schemasResponse && (
-                            <Box sx={{ mt: 2 }}>
-                              <Typography variant="caption">Debug: Raw Response</Typography>
-                              <pre style={{ fontSize: '0.7rem', maxHeight: '100px', overflow: 'auto' }}>
-                                {JSON.stringify(schemasResponse, null, 2)}
-                              </pre>
-                            </Box>
-                          )}
-                        </TableCell>
-                      </TableRow>
-                    ) : (
-                      parsedSchemas
-                        .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
-                        .map((schema) => (
-                          <TableRow key={schema.id}>
-                            <TableCell component="th" scope="row">
-                              {schema.id}
-                            </TableCell>
-                            <TableCell>{getSchemaTitle(schema)}</TableCell>
-                            <TableCell>
-                              <Chip 
-                                label={schema.schema.type || 'unknown'} 
-                                size="small" 
-                                color="primary"
-                                variant="outlined"
-                              />
-                            </TableCell>
-                            <TableCell>
-                              {getPropertiesCount(schema)} trait(s)
-                            </TableCell>
-                            <TableCell>
-                              <Button
-                                variant="outlined"
-                                size="small"
-                                startIcon={<Code />}
-                                onClick={() => handleViewSchema(schema.id)}
-                                sx={{ mr: 1 }}
-                              >
-                                View Schema
-                              </Button>
-                            </TableCell>
-                          </TableRow>
-                        ))
-                    )}
-                  </TableBody>
-                </Table>
-              </TableContainer>
-              <TablePagination
-                rowsPerPageOptions={[5, 10, 25]}
-                component="div"
-                count={parsedSchemas.length}
-                rowsPerPage={rowsPerPage}
-                page={page}
-                onPageChange={handleChangePage}
-                onRowsPerPageChange={handleChangeRowsPerPage}
+      <Box>
+        <Box sx={{ 
+          display: 'flex', 
+          justifyContent: 'space-between', 
+          alignItems: 'center', 
+          mb: 4,
+          flexDirection: { xs: 'column', sm: 'row' },
+          gap: 2
+        }}>
+          <Box>
+            <Typography variant="h4" sx={{ fontWeight: 700, mb: 1 }}>
+              Identity Schemas
+            </Typography>
+            <Typography variant="body1" color="text.secondary">
+              Manage your identity schemas and their properties
+            </Typography>
+          </Box>
+          <Box sx={{ display: 'flex', gap: 1 }}>
+            <Button 
+              variant="contained" 
+              startIcon={<Add />}
+              sx={{ 
+                borderRadius: 'var(--radius)',
+                boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)',
+                background: 'var(--primary)',
+                '&:hover': {
+                  background: 'var(--primary)',
+                  opacity: 0.9,
+                }
+              }}
+            >
+              Add Schema
+            </Button>
+            <Tooltip title="Refresh">
+              <IconButton 
+                onClick={() => refetch()} 
+                sx={{ 
+                  borderRadius: 'var(--radius)',
+                  background: 'var(--accent)',
+                  color: 'var(--accent-foreground)',
+                  '&:hover': {
+                    background: 'var(--accent)',
+                    opacity: 0.9,
+                  }
+                }}
+              >
+                <Refresh />
+              </IconButton>
+            </Tooltip>
+          </Box>
+        </Box>
+
+        <Card 
+          elevation={0} 
+          sx={{ 
+            mb: 4, 
+            borderRadius: 'var(--radius)',
+            background: 'var(--card)',
+            color: 'var(--card-foreground)',
+            border: '1px solid var(--border)',
+            boxShadow: '0 1px 3px rgba(0, 0, 0, 0.05), 0 1px 2px rgba(0, 0, 0, 0.1)',
+          }}
+        >
+          <CardContent>
+            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+              <Typography variant="h6" sx={{ fontWeight: 600 }}>
+                All Schemas
+              </Typography>
+              <TextField
+                placeholder="Search schemas..."
+                size="small"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                InputProps={{
+                  startAdornment: (
+                    <InputAdornment position="start">
+                      <Search fontSize="small" />
+                    </InputAdornment>
+                  ),
+                  endAdornment: searchQuery ? (
+                    <InputAdornment position="end">
+                      <IconButton size="small" onClick={() => setSearchQuery('')}>
+                        <Close fontSize="small" />
+                      </IconButton>
+                    </InputAdornment>
+                  ) : null,
+                  sx: {
+                    borderRadius: 'var(--radius)',
+                  }
+                }}
+                sx={{ width: { xs: '100%', sm: '300px' } }}
               />
-            </>
-          )}
-        </Paper>
+            </Box>
+
+            {isLoading ? (
+              <Box sx={{ display: 'flex', justifyContent: 'center', p: 3 }}>
+                <CircularProgress />
+              </Box>
+            ) : error ? (
+              <Box sx={{ p: 3 }}>
+                <Typography color="error">Error loading schemas. Please try again later.</Typography>
+                <pre>{JSON.stringify(error, null, 2)}</pre>
+              </Box>
+            ) : (
+              <>
+                <TableContainer sx={{ 
+                  borderRadius: 'var(--radius)',
+                  border: '1px solid var(--border)',
+                  overflow: 'hidden',
+                }}>
+                  <Table sx={{ minWidth: 750 }} aria-labelledby="schemasTable">
+                    <TableHead>
+                      <TableRow sx={{ 
+                        backgroundColor: 'var(--accent)',
+                      }}>
+                        <TableCell sx={{ fontWeight: 600 }}>ID</TableCell>
+                        <TableCell sx={{ fontWeight: 600 }}>Title</TableCell>
+                        <TableCell sx={{ fontWeight: 600 }}>Type</TableCell>
+                        <TableCell sx={{ fontWeight: 600 }}>Properties</TableCell>
+                        <TableCell sx={{ fontWeight: 600 }}>Actions</TableCell>
+                      </TableRow>
+                    </TableHead>
+                    <TableBody>
+                      {filteredSchemas.length === 0 ? (
+                        <TableRow>
+                          <TableCell colSpan={5} align="center" sx={{ py: 4 }}>
+                            <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 1 }}>
+                              <Description sx={{ fontSize: 40, color: 'var(--muted-foreground)', opacity: 0.5 }} />
+                              <Typography variant="h6">No schemas found</Typography>
+                              <Typography variant="body2" color="text.secondary">
+                                {searchQuery ? 'Try a different search term' : 'Add your first schema to get started'}
+                              </Typography>
+                            </Box>
+                            {schemasResponse && (
+                              <Box sx={{ mt: 2 }}>
+                                <Typography variant="caption">Debug: Raw Response</Typography>
+                                <pre style={{ fontSize: '0.7rem', maxHeight: '100px', overflow: 'auto' }}>
+                                  {JSON.stringify(schemasResponse, null, 2)}
+                                </pre>
+                              </Box>
+                            )}
+                          </TableCell>
+                        </TableRow>
+                      ) : (
+                        filteredSchemas
+                          .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
+                          .map((schema) => (
+                            <TableRow 
+                              key={schema.id}
+                              sx={{ 
+                                '&:hover': { 
+                                  backgroundColor: 'var(--accent)',
+                                },
+                                transition: 'background-color 0.2s ease'
+                              }}
+                            >
+                              <TableCell 
+                                component="th" 
+                                scope="row"
+                                sx={{ 
+                                  maxWidth: 200, 
+                                  overflow: 'hidden', 
+                                  textOverflow: 'ellipsis',
+                                  whiteSpace: 'nowrap',
+                                  fontFamily: 'monospace',
+                                  fontSize: '0.875rem'
+                                }}
+                              >
+                                {schema.id}
+                              </TableCell>
+                              <TableCell sx={{ fontWeight: 500 }}>{getSchemaTitle(schema)}</TableCell>
+                              <TableCell>
+                                <Chip 
+                                  label={schema.schema.type || 'unknown'} 
+                                  size="small" 
+                                  color="primary"
+                                  variant="filled"
+                                  sx={{ 
+                                    borderRadius: 'var(--radius)',
+                                    fontWeight: 500,
+                                    background: 'var(--primary)',
+                                    color: 'var(--primary-foreground)'
+                                  }}
+                                />
+                              </TableCell>
+                              <TableCell>
+                                <Chip 
+                                  label={`${getPropertiesCount(schema)} trait(s)`}
+                                  size="small"
+                                  color="secondary"
+                                  variant="outlined"
+                                  sx={{ 
+                                    borderRadius: 'var(--radius)',
+                                    fontWeight: 500
+                                  }}
+                                />
+                              </TableCell>
+                              <TableCell>
+                                <Button
+                                  variant="outlined"
+                                  size="small"
+                                  startIcon={<Code />}
+                                  onClick={() => handleViewSchema(schema.id)}
+                                  sx={{ 
+                                    mr: 1, 
+                                    borderRadius: 'var(--radius)',
+                                    textTransform: 'none',
+                                    fontWeight: 500
+                                  }}
+                                >
+                                  View Schema
+                                </Button>
+                                <IconButton size="small">
+                                  <MoreVert fontSize="small" />
+                                </IconButton>
+                              </TableCell>
+                            </TableRow>
+                          ))
+                      )}
+                    </TableBody>
+                  </Table>
+                </TableContainer>
+                <TablePagination
+                  rowsPerPageOptions={[5, 10, 25]}
+                  component="div"
+                  count={filteredSchemas.length}
+                  rowsPerPage={rowsPerPage}
+                  page={page}
+                  onPageChange={handleChangePage}
+                  onRowsPerPageChange={handleChangeRowsPerPage}
+                  sx={{
+                    '.MuiTablePagination-selectLabel, .MuiTablePagination-displayedRows': {
+                      margin: 0,
+                    }
+                  }}
+                />
+              </>
+            )}
+          </CardContent>
+        </Card>
         
-        <Typography variant="body2" color="text.secondary" sx={{ mt: 2 }}>
-          Identity schemas define the structure of identity data in Ory Kratos. They determine what fields are available for registration, login, and profile management.
-        </Typography>
+        <Card 
+          elevation={0} 
+          sx={{ 
+            borderRadius: 'var(--radius)',
+            background: 'var(--card)',
+            color: 'var(--card-foreground)',
+            border: '1px solid var(--border)',
+            boxShadow: '0 1px 3px rgba(0, 0, 0, 0.05), 0 1px 2px rgba(0, 0, 0, 0.1)',
+          }}
+        >
+          <CardContent>
+            <Typography variant="h6" sx={{ fontWeight: 600, mb: 2 }}>About Identity Schemas</Typography>
+            <Typography variant="body2" color="text.secondary">
+              Identity schemas define the structure of identity data in Ory Kratos. They determine what fields are available for registration, login, and profile management. Use schemas to customize the user experience and data collection for your application.
+            </Typography>
+          </CardContent>
+        </Card>
         
         {/* Schema Dialog */}
         <Dialog
@@ -209,35 +380,71 @@ export default function SchemasPage() {
           aria-labelledby="schema-dialog-title"
           maxWidth="md"
           fullWidth
+          PaperProps={{
+            sx: {
+              borderRadius: 'var(--radius)',
+              background: 'var(--card)',
+              color: 'var(--card-foreground)',
+              boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)',
+            }
+          }}
         >
-          <DialogTitle id="schema-dialog-title">
-            Schema Details {selectedSchemaId && `(ID: ${selectedSchemaId})`}
+          <DialogTitle id="schema-dialog-title" sx={{ 
+            display: 'flex', 
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            borderBottom: '1px solid var(--border)',
+            px: 3,
+            py: 2
+          }}>
+            <Typography variant="h6" sx={{ fontWeight: 600 }}>
+              Schema Details {selectedSchemaId && <Typography component="span" sx={{ fontFamily: 'monospace', fontSize: '0.875rem' }}>(ID: {selectedSchemaId})</Typography>}
+            </Typography>
+            <IconButton onClick={handleCloseSchemaDialog} size="small">
+              <Close />
+            </IconButton>
           </DialogTitle>
-          <DialogContent dividers>
+          <DialogContent dividers sx={{ p: 0 }}>
             {schemaLoading ? (
               <Box sx={{ display: 'flex', justifyContent: 'center', p: 3 }}>
                 <CircularProgress />
               </Box>
             ) : schemaContent ? (
               <Box sx={{ 
-                bgcolor: 'background.paper', 
-                p: 2, 
+                p: 3, 
                 borderRadius: 1, 
                 overflow: 'auto',
-                maxHeight: '60vh'
+                maxHeight: '60vh',
+                background: 'var(--accent)',
               }}>
-                <pre style={{ whiteSpace: 'pre-wrap', wordBreak: 'break-word' }}>
+                <pre style={{ 
+                  whiteSpace: 'pre-wrap', 
+                  wordBreak: 'break-word',
+                  margin: 0,
+                  fontFamily: 'monospace',
+                  fontSize: '0.875rem'
+                }}>
                   {JSON.stringify(schemaContent, null, 2)}
                 </pre>
               </Box>
             ) : (
-              <Typography color="error">
+              <Typography color="error" sx={{ p: 3 }}>
                 Failed to load schema content. Please try again.
               </Typography>
             )}
           </DialogContent>
-          <DialogActions>
-            <Button onClick={handleCloseSchemaDialog}>Close</Button>
+          <DialogActions sx={{ p: 2, borderTop: '1px solid var(--border)' }}>
+            <Button 
+              onClick={handleCloseSchemaDialog}
+              variant="outlined"
+              sx={{ 
+                borderRadius: 'var(--radius)',
+                textTransform: 'none',
+                fontWeight: 500
+              }}
+            >
+              Close
+            </Button>
           </DialogActions>
         </Dialog>
       </Box>
