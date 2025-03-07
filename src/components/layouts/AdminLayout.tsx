@@ -1,6 +1,6 @@
 import React, { ReactNode, useState } from 'react';
-import { Box, CssBaseline, AppBar, Toolbar, Typography, Drawer, List, Divider, ListItem, ListItemButton, ListItemIcon, ListItemText, IconButton, useMediaQuery, useTheme as useMuiTheme, Avatar, Menu, MenuItem, Tooltip, Badge } from '@mui/material';
-import { Dashboard, Person, Schema, VpnKey, Menu as MenuIcon, Notifications, ChevronLeft, ChevronRight, DarkMode, LightMode, People, Logout } from '@mui/icons-material';
+import { Box, CssBaseline, AppBar, Toolbar, Typography, Drawer, List, Divider, ListItem, ListItemButton, ListItemIcon, ListItemText, IconButton, useMediaQuery, useTheme as useMuiTheme, Avatar, Menu, MenuItem, Tooltip } from '@mui/material';
+import { Dashboard, Person, Schema, VpnKey, Menu as MenuIcon, ChevronLeft, ChevronRight, DarkMode, LightMode, People, Logout } from '@mui/icons-material';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { useTheme } from '@/lib/providers/ThemeProvider';
@@ -83,13 +83,6 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
               </Typography>
             </Box>
             <Box sx={{ display: 'flex', alignItems: 'center' }}>
-              <Tooltip title="Notifications">
-                <IconButton color="inherit" sx={{ mr: 1 }}>
-                  <Badge badgeContent={4} color="error">
-                    <Notifications />
-                  </Badge>
-                </IconButton>
-              </Tooltip>
               <Tooltip title="Toggle theme">
                 <IconButton color="inherit" sx={{ mr: 2 }} onClick={toggleTheme}>
                   {currentTheme === 'dark' ? <LightMode /> : <DarkMode />}
@@ -122,7 +115,12 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
                 open={Boolean(anchorEl)}
                 onClose={handleClose}
               >
-                <MenuItem onClick={handleClose} component={Link} href="/profile">
+                <MenuItem 
+                  onClick={handleClose} 
+                  component={Link} 
+                  href="/profile"
+                  disabled={pathname === '/profile'}
+                >
                   <Person fontSize="small" sx={{ mr: 1 }} />
                   Profile
                 </MenuItem>

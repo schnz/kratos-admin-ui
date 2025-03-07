@@ -9,17 +9,20 @@ import {
   Toolbar, 
   Tooltip, 
   Typography,
-  Chip
+  Chip,
+  Divider
 } from '@mui/material';
 import { 
-  Notifications as NotificationsIcon, 
   Person as PersonIcon,
-  Settings as SettingsIcon,
   Logout as LogoutIcon,
-  Menu as MenuIcon
+  Menu as MenuIcon,
+  AdminPanelSettings,
+  RemoveRedEye
 } from '@mui/icons-material';
 import { useUser, useLogout } from '@/lib/stores/authStore';
+import { UserRole } from '@/lib/config/users';
 import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 
 interface HeaderProps {
   onSidebarToggle: () => void;
@@ -28,6 +31,7 @@ interface HeaderProps {
 export function Header({ onSidebarToggle }: HeaderProps) {
   const user = useUser();
   const logout = useLogout();
+  const pathname = usePathname();
   const [anchorElUser, setAnchorElUser] = useState<null | HTMLElement>(null);
 
   const handleOpenUserMenu = (event: React.MouseEvent<HTMLElement>) => {
@@ -71,17 +75,14 @@ export function Header({ onSidebarToggle }: HeaderProps) {
         <Box sx={{ display: 'flex', alignItems: 'center' }}>
           {user && (
             <Chip
-              label={`${user.displayName} (${user.role})`}
+              icon={user.role === UserRole.ADMIN ? <AdminPanelSettings fontSize="small" /> : <RemoveRedEye fontSize="small" />}
+              label={user.displayName}
               variant="outlined"
+              color={user.role === UserRole.ADMIN ? "primary" : "secondary"}
               size="small"
               sx={{ mr: 2, display: { xs: 'none', sm: 'flex' } }}
             />
           )}
-          <Tooltip title="Notifications">
-            <IconButton color="inherit" size="large">
-              <NotificationsIcon />
-            </IconButton>
-          </Tooltip>
           <Tooltip title="Account">
             <IconButton
               onClick={handleOpenUserMenu}
@@ -92,7 +93,11 @@ export function Header({ onSidebarToggle }: HeaderProps) {
               color="inherit"
             >
               <Avatar 
-                sx={{ width: 32, height: 32, bgcolor: 'primary.main' }}
+                sx={{ 
+                  width: 32, 
+                  height: 32, 
+                  bgcolor: user?.role === UserRole.ADMIN ? 'primary.main' : 'secondary.main'
+                }}
               >
                 {user?.displayName.charAt(0) || <PersonIcon />}
               </Avatar>
@@ -114,13 +119,31 @@ export function Header({ onSidebarToggle }: HeaderProps) {
             open={Boolean(anchorElUser)}
             onClose={handleCloseUserMenu}
           >
-            <MenuItem onClick={handleCloseUserMenu} component={Link} href="/profile">
+            {user && (
+              <Box sx={{ px: 2, py: 1 }}>
+                <Typography variant="subtitle2" sx={{ fontWeight: 'bold' }}>
+                  {user.displayName}
+                </Typography>
+                <Typography variant="body2" color="text.secondary">
+                  {user.email}
+                </Typography>
+                <Chip
+                  label={user.role}
+                  size="small"
+                  color={user.role === UserRole.ADMIN ? "primary" : "secondary"}
+                  sx={{ mt: 1 }}
+                />
+              </Box>
+            )}
+            <Divider />
+            <MenuItem 
+              onClick={handleCloseUserMenu} 
+              component={Link} 
+              href="/profile"
+              disabled={pathname === '/profile'}
+            >
               <PersonIcon fontSize="small" sx={{ mr: 1 }} />
               <Typography textAlign="center">Profile</Typography>
-            </MenuItem>
-            <MenuItem onClick={handleCloseUserMenu} component={Link} href="/settings">
-              <SettingsIcon fontSize="small" sx={{ mr: 1 }} />
-              <Typography textAlign="center">Settings</Typography>
             </MenuItem>
             <MenuItem onClick={handleLogout}>
               <LogoutIcon fontSize="small" sx={{ mr: 1 }} />
