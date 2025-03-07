@@ -219,16 +219,15 @@ export default function SchemasPage() {
               </Box>
             ) : (
               <>
-                <TableContainer sx={{ 
-                  borderRadius: 'var(--radius)',
-                  border: '1px solid var(--border)',
+                <TableContainer component={Paper} sx={{ 
+                  boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
+                  borderRadius: '8px',
                   overflow: 'hidden',
+                  border: '1px solid var(--border)'
                 }}>
-                  <Table sx={{ minWidth: 750 }} aria-labelledby="schemasTable">
-                    <TableHead>
-                      <TableRow sx={{ 
-                        backgroundColor: 'var(--accent)',
-                      }}>
+                  <Table sx={{ minWidth: 650 }} aria-label="schemas table">
+                    <TableHead sx={{ backgroundColor: 'var(--table-header)' }}>
+                      <TableRow>
                         <TableCell sx={{ fontWeight: 600 }}>ID</TableCell>
                         <TableCell sx={{ fontWeight: 600 }}>Title</TableCell>
                         <TableCell sx={{ fontWeight: 600 }}>Type</TableCell>
@@ -265,9 +264,9 @@ export default function SchemasPage() {
                               key={schema.id}
                               sx={{ 
                                 '&:hover': { 
-                                  backgroundColor: 'var(--accent)',
+                                  backgroundColor: 'var(--table-row-hover)' 
                                 },
-                                transition: 'background-color 0.2s ease'
+                                borderBottom: '1px solid var(--table-border)'
                               }}
                             >
                               <TableCell 

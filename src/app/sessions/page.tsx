@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { Box, Typography, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, TablePagination, Chip, CircularProgress, Alert, Card, CardContent, IconButton, Tooltip, TextField, InputAdornment } from '@mui/material';
+import { Box, Typography, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, TablePagination, Chip, CircularProgress, Alert, Card, CardContent, IconButton, Tooltip, TextField, InputAdornment, Paper } from '@mui/material';
 import { AdminLayout } from '../../components/layouts/AdminLayout';
 import { useQuery } from '@tanstack/react-query';
 import { listSessions } from '../../lib/kratos/client';
@@ -180,16 +180,15 @@ export default function SessionsPage() {
               </Box>
             ) : (
               <>
-                <TableContainer sx={{ 
-                  borderRadius: 'var(--radius)',
-                  border: '1px solid var(--border)',
+                <TableContainer component={Paper} sx={{ 
+                  boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
+                  borderRadius: '8px',
                   overflow: 'hidden',
+                  border: '1px solid var(--border)'
                 }}>
-                  <Table sx={{ minWidth: 750 }} aria-labelledby="sessionsTable">
-                    <TableHead>
-                      <TableRow sx={{ 
-                        backgroundColor: 'var(--accent)',
-                      }}>
+                  <Table sx={{ minWidth: 650 }} aria-label="sessions table">
+                    <TableHead sx={{ backgroundColor: 'var(--table-header)' }}>
+                      <TableRow>
                         <TableCell sx={{ fontWeight: 600 }}>Session ID</TableCell>
                         <TableCell sx={{ fontWeight: 600 }}>Identity</TableCell>
                         <TableCell sx={{ fontWeight: 600 }}>Status</TableCell>
@@ -222,9 +221,9 @@ export default function SessionsPage() {
                                 key={session.id}
                                 sx={{ 
                                   '&:hover': { 
-                                    backgroundColor: 'var(--accent)',
+                                    backgroundColor: 'var(--table-row-hover)' 
                                   },
-                                  transition: 'background-color 0.2s ease'
+                                  borderBottom: '1px solid var(--table-border)'
                                 }}
                               >
                                 <TableCell 
