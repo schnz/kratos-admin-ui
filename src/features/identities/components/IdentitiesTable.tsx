@@ -4,8 +4,10 @@ import { Box, Button, Typography, CircularProgress, TextField, InputAdornment, I
 import { Add, Search, Refresh, NavigateBefore, NavigateNext } from '@mui/icons-material';
 import { useIdentities, useIdentitiesSearch } from '@/hooks/useKratos';
 import { Identity } from '@ory/kratos-client';
+import { useRouter } from 'next/navigation';
 
 const IdentitiesTable: React.FC = () => {
+  const router = useRouter();
   const [selectedRows, setSelectedRows] = useState<string[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [debouncedSearchTerm, setDebouncedSearchTerm] = useState('');
@@ -182,8 +184,7 @@ const IdentitiesTable: React.FC = () => {
   ];
 
   const handleViewDetails = (id: string) => {
-    console.log('View details for identity:', id);
-    // Implement navigation to identity details page
+    router.push(`/identities/${id}`);
   };
 
   const handleDelete = (id: string) => {
