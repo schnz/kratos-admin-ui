@@ -326,7 +326,7 @@ const IdentitiesTable: React.FC = () => {
           }}
           slotProps={{
             toolbar: {
-              showQuickFilter: true,
+              showQuickFilter: false,
             },
           }}
         />
