@@ -11,10 +11,6 @@ import {
   Typography,
   Alert,
   Chip,
-  FormControl,
-  InputLabel,
-  Select,
-  MenuItem,
 } from '@mui/material';
 import { useForm, Controller } from 'react-hook-form';
 import { Identity } from '@ory/kratos-client';
@@ -33,7 +29,6 @@ interface IdentityEditForm {
   username: string;
   firstName: string;
   lastName: string;
-  state: string;
 }
 
 export const IdentityEditModal: React.FC<IdentityEditModalProps> = ({
@@ -55,7 +50,6 @@ export const IdentityEditModal: React.FC<IdentityEditModalProps> = ({
       username: '',
       firstName: '',
       lastName: '',
-      state: 'active',
     },
   });
 
@@ -69,7 +63,6 @@ export const IdentityEditModal: React.FC<IdentityEditModalProps> = ({
         username: traits?.username || '',
         firstName: traits?.name?.first || traits?.firstName || '',
         lastName: traits?.name?.last || traits?.lastName || '',
-        state: identity.state || 'active',
       });
     }
   }, [identity, reset]);
@@ -95,12 +88,11 @@ export const IdentityEditModal: React.FC<IdentityEditModalProps> = ({
 
       console.log('Transformed traits:', traits);
 
-      // For now, only update traits, not state (state updates might need separate endpoint)
+      // Only update traits, not state
       await updateIdentityMutation.mutateAsync({
         id: identity.id,
         schemaId: identity.schema_id,
         traits,
-        // state: data.state, // Comment out state for now
       });
 
       onSuccess?.();
@@ -250,32 +242,6 @@ export const IdentityEditModal: React.FC<IdentityEditModalProps> = ({
               />
             </Grid>
 
-            {/* Identity State */}
-            <Grid item xs={12}>
-              <Typography variant="h6" gutterBottom sx={{ mt: 2 }}>
-                Identity State
-              </Typography>
-            </Grid>
-
-            <Grid item xs={12} md={6}>
-              <Controller
-                name="state"
-                control={control}
-                render={({ field }) => (
-                  <FormControl fullWidth>
-                    <InputLabel>State</InputLabel>
-                    <Select
-                      {...field}
-                      label="State"
-                      disabled={updateIdentityMutation.isPending}
-                    >
-                      <MenuItem value="active">Active</MenuItem>
-                      <MenuItem value="inactive">Inactive</MenuItem>
-                    </Select>
-                  </FormControl>
-                )}
-              />
-            </Grid>
 
             {/* Read-only Information */}
             <Grid item xs={12}>

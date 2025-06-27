@@ -204,22 +204,15 @@ export const useUpdateIdentity = () => {
     mutationFn: async ({ 
       id, 
       schemaId, 
-      traits, 
-      state 
+      traits
     }: { 
       id: string; 
       schemaId: string; 
-      traits: any; 
-      state?: string;
+      traits: any;
     }) => {
       const jsonPatch = [
         { op: 'replace', path: '/traits', value: traits }
       ];
-      
-      // Only add state patch if it's provided and different from current
-      if (state) {
-        jsonPatch.push({ op: 'replace', path: '/state', value: state });
-      }
       
       console.log('JSON Patch being sent:', jsonPatch);
       
