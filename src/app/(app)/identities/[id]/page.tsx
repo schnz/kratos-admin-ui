@@ -8,6 +8,8 @@ import { ProtectedRoute } from '@/features/auth/components/ProtectedRoute';
 import { UserRole } from '@/config/users';
 import { useIdentity } from '@/hooks/useKratos';
 import { DottedLoader } from '@/components/ui/DottedLoader';
+import { IdentityEditModal } from '@/features/identities/components/IdentityEditModal';
+import { useState } from 'react';
 
 // JSON syntax highlighting function
 function syntaxHighlightJson(json: string) {
@@ -35,6 +37,7 @@ export default function IdentityDetailPage() {
   const params = useParams();
   const router = useRouter();
   const identityId = params.id as string;
+  const [editModalOpen, setEditModalOpen] = useState(false);
   
   const { data: identity, isLoading, isError, error, refetch } = useIdentity(identityId);
   
@@ -43,8 +46,11 @@ export default function IdentityDetailPage() {
   };
   
   const handleEdit = () => {
-    console.log('Edit identity:', identityId);
-    // TODO: Implement edit functionality
+    setEditModalOpen(true);
+  };
+
+  const handleEditSuccess = () => {
+    refetch(); // Refresh identity data after successful edit
   };
   
   const handleDelete = () => {
@@ -240,6 +246,14 @@ export default function IdentityDetailPage() {
               </Card>
             </Grid>
           </Grid>
+
+          {/* Edit Modal */}
+          <IdentityEditModal
+            open={editModalOpen}
+            onClose={() => setEditModalOpen(false)}
+            identity={identity}
+            onSuccess={handleEditSuccess}
+          />
         </Box>
       </AdminLayout>
     </ProtectedRoute>

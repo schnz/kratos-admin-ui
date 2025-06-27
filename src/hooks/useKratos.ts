@@ -212,12 +212,20 @@ export const useUpdateIdentity = () => {
       traits: any; 
       state?: string;
     }) => {
+      const jsonPatch = [
+        { op: 'replace', path: '/traits', value: traits }
+      ];
+      
+      // Only add state patch if it's provided and different from current
+      if (state) {
+        jsonPatch.push({ op: 'replace', path: '/state', value: state });
+      }
+      
+      console.log('JSON Patch being sent:', jsonPatch);
+      
       const { data } = await patchIdentity({ 
         id, 
-        json_patch: [
-          { op: 'replace', path: '/traits', value: traits },
-          ...(state ? [{ op: 'replace', path: '/state', value: state }] : []),
-        ],
+        jsonPatch: jsonPatch,
       });
       return data;
     },
@@ -233,7 +241,7 @@ export const usePatchIdentity = () => {
   
   return useMutation({
     mutationFn: async ({ id, jsonPatch }: { id: string; jsonPatch: any[] }) => {
-      const { data } = await patchIdentity({ id, json_patch: jsonPatch });
+      const { data } = await patchIdentity({ id, jsonPatch: jsonPatch });
       return data;
     },
     onSuccess: (_, variables) => {
