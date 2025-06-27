@@ -7,6 +7,7 @@ import { listIdentities, listSessions, listIdentitySchemas, checkKratosReady } f
 import { ProtectedRoute } from '@/features/auth/components/ProtectedRoute';
 import { UserRole } from '@/config/users';
 import { useState, useEffect } from 'react';
+import { DottedLoader } from '@/components/ui/DottedLoader';
 
 export default function Dashboard() {
   // Fetch multiple pages to get accurate total count
@@ -135,9 +136,15 @@ export default function Dashboard() {
                 <Typography component="h2" variant="h6" color="primary" gutterBottom>
                   Identities
                 </Typography>
-                <Typography component="p" variant="h4">
-                  {identitiesLoading ? '...' : `${totalCount}${isEstimate ? '+' : ''}`}
-                </Typography>
+                <Box sx={{ position: 'relative', height: '48px', display: 'flex', alignItems: 'center' }}>
+                  {identitiesLoading ? (
+                    <DottedLoader variant="inline" />
+                  ) : (
+                    <Typography component="p" variant="h4">
+                      {`${totalCount}${isEstimate ? '+' : ''}`}
+                    </Typography>
+                  )}
+                </Box>
                 <Typography color="text.secondary" sx={{ flex: 1 }}>
                   {isEstimate ? 'Registered users (estimated)' : 'Total registered users'}
                 </Typography>
@@ -156,9 +163,15 @@ export default function Dashboard() {
                 <Typography component="h2" variant="h6" color="primary" gutterBottom>
                   Sessions
                 </Typography>
-                <Typography component="p" variant="h4">
-                  {sessionsLoading ? '...' : sessions?.length || 0}
-                </Typography>
+                <Box sx={{ position: 'relative', height: '48px', display: 'flex', alignItems: 'center' }}>
+                  {sessionsLoading ? (
+                    <DottedLoader variant="inline" />
+                  ) : (
+                    <Typography component="p" variant="h4">
+                      {sessions?.length || 0}
+                    </Typography>
+                  )}
+                </Box>
                 <Typography color="text.secondary" sx={{ flex: 1 }}>
                   Active sessions
                 </Typography>
@@ -177,9 +190,15 @@ export default function Dashboard() {
                 <Typography component="h2" variant="h6" color="primary" gutterBottom>
                   Schemas
                 </Typography>
-                <Typography component="p" variant="h4">
-                  {schemasLoading ? '...' : schemas?.length || 0}
-                </Typography>
+                <Box sx={{ position: 'relative', height: '48px', display: 'flex', alignItems: 'center' }}>
+                  {schemasLoading ? (
+                    <DottedLoader variant="inline" />
+                  ) : (
+                    <Typography component="p" variant="h4">
+                      {schemas?.length || 0}
+                    </Typography>
+                  )}
+                </Box>
                 <Typography color="text.secondary" sx={{ flex: 1 }}>
                   Identity schemas
                 </Typography>

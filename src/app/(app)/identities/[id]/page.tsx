@@ -1,12 +1,13 @@
 'use client';
 
 import { useParams, useRouter } from 'next/navigation';
-import { Box, Button, Typography, Paper, Grid, Chip, CircularProgress, Card, CardContent, Divider, IconButton, Tooltip } from '@mui/material';
+import { Box, Button, Typography, Paper, Grid, Chip, Card, CardContent, Divider, IconButton, Tooltip } from '@mui/material';
 import { ArrowBack, Edit, Delete, Refresh } from '@mui/icons-material';
 import { AdminLayout } from '@/components/templates/Admin/AdminLayout';
 import { ProtectedRoute } from '@/features/auth/components/ProtectedRoute';
 import { UserRole } from '@/config/users';
 import { useIdentity } from '@/hooks/useKratos';
+import { DottedLoader } from '@/components/ui/DottedLoader';
 
 // JSON syntax highlighting function
 function syntaxHighlightJson(json: string) {
@@ -56,7 +57,7 @@ export default function IdentityDetailPage() {
       <ProtectedRoute requiredRole={UserRole.ADMIN}>
         <AdminLayout>
           <Box display="flex" justifyContent="center" alignItems="center" height="400px">
-            <CircularProgress />
+            <DottedLoader variant="page" />
           </Box>
         </AdminLayout>
       </ProtectedRoute>

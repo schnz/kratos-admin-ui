@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { DataGrid, GridColDef, GridToolbar } from '@mui/x-data-grid';
-import { Box, Button, Typography, CircularProgress, TextField, InputAdornment, IconButton, Tooltip, Paper, Pagination, FormControl, InputLabel, Select, MenuItem } from '@mui/material';
+import { Box, Button, Typography, TextField, InputAdornment, IconButton, Tooltip, Paper, Pagination, FormControl, InputLabel, Select, MenuItem } from '@mui/material';
 import { Add, Search, Refresh, NavigateBefore, NavigateNext } from '@mui/icons-material';
 import { useIdentities, useIdentitiesSearch } from '@/hooks/useKratos';
 import { Identity } from '@ory/kratos-client';
 import { useRouter } from 'next/navigation';
+import { DottedLoader } from '@/components/ui/DottedLoader';
 
 const IdentitiesTable: React.FC = () => {
   const router = useRouter();
@@ -236,7 +237,7 @@ const IdentitiesTable: React.FC = () => {
   if (isLoading) {
     return (
       <Box display="flex" justifyContent="center" alignItems="center" height="400px">
-        <CircularProgress />
+        <DottedLoader variant="page" />
       </Box>
     );
   }
