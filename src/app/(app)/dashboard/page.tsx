@@ -97,17 +97,22 @@ export default function Dashboard() {
     },
   })
 
-  const [kratosStatus, setKratosStatus] = useState(false);
-
-  useEffect(() => {
-    const interval = setInterval(() => {
-      checkKratosReady().then(status => setKratosStatus(status));
-      checkKratosReady().then(status => console.log(status));
-    }, 5000);
-
-    // Cleanup the interval on component unmount
-    return () => clearInterval(interval);
-  }, []);
+  const { data: kratosStatus = false, isLoading: kratosLoading } = useQuery({
+    queryKey: ['kratos-status'],
+    queryFn: async () => {
+      try {
+        const status = await checkKratosReady();
+        console.log('Kratos status:', status);
+        return status;
+      } catch (error) {
+        console.error('Error checking Kratos status:', error);
+        return false;
+      }
+    },
+    refetchInterval: 5000, // Check every 5 seconds
+    staleTime: 4000, // Consider data stale after 4 seconds
+    refetchOnWindowFocus: true, // Recheck when window gains focus
+  });
 
   return (
     <ProtectedRoute requiredRole={UserRole.VIEWER}>
@@ -193,8 +198,14 @@ export default function Dashboard() {
                 <Typography component="h2" variant="h6" color="primary" gutterBottom>
                   API Status
                 </Typography>
-                <Typography component="p" variant="h4">
-                  {kratosStatus? 'Connected' : 'Disconnected'}
+                <Typography 
+                  component="p" 
+                  variant="h4"
+                  sx={{
+                    color: kratosLoading ? 'orange' : kratosStatus ? 'success.main' : 'error.main'
+                  }}
+                >
+                  {kratosLoading ? 'Checking...' : kratosStatus ? 'Connected' : 'Disconnected'}
                 </Typography>
                 <Typography color="text.secondary" sx={{ flex: 1 }}>
                   Kratos API connection
