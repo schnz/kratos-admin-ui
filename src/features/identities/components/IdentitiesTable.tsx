@@ -6,6 +6,7 @@ import { useIdentities, useIdentitiesSearch } from '@/hooks/useKratos';
 import { Identity } from '@ory/kratos-client';
 import { useRouter } from 'next/navigation';
 import { DottedLoader } from '@/components/ui/DottedLoader';
+import { IdentityDeleteDialog } from './IdentityDeleteDialog';
 
 const IdentitiesTable: React.FC = () => {
   const router = useRouter();
@@ -15,6 +16,8 @@ const IdentitiesTable: React.FC = () => {
   const [pageSize, setPageSize] = useState(25);
   const [pageToken, setPageToken] = useState<string | undefined>(undefined);
   const [pageHistory, setPageHistory] = useState<(string | undefined)[]>([undefined]);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [identityToDelete, setIdentityToDelete] = useState<Identity | null>(null);
   
   // Debounce search term to avoid API calls on every keystroke
   useEffect(() => {
@@ -189,8 +192,17 @@ const IdentitiesTable: React.FC = () => {
   };
 
   const handleDelete = (id: string) => {
-    console.log('Delete identity:', id);
-    // Implement delete confirmation dialog and API call
+    const identity = displayedIdentities.find((identity: Identity) => identity.id === id);
+    if (identity) {
+      setIdentityToDelete(identity);
+      setDeleteDialogOpen(true);
+    }
+  };
+
+  const handleDeleteSuccess = () => {
+    // Refresh the data after successful delete
+    refetch();
+    setIdentityToDelete(null);
   };
 
   const handleCreateNew = () => {
@@ -365,6 +377,17 @@ const IdentitiesTable: React.FC = () => {
           </Button>
         </Box>
       </Box>
+
+      {/* Delete Dialog */}
+      <IdentityDeleteDialog
+        open={deleteDialogOpen}
+        onClose={() => {
+          setDeleteDialogOpen(false);
+          setIdentityToDelete(null);
+        }}
+        identity={identityToDelete}
+        onSuccess={handleDeleteSuccess}
+      />
     </Paper>
   );
 };

@@ -9,6 +9,7 @@ import { UserRole } from '@/config/users';
 import { useIdentity } from '@/hooks/useKratos';
 import { DottedLoader } from '@/components/ui/DottedLoader';
 import { IdentityEditModal } from '@/features/identities/components/IdentityEditModal';
+import { IdentityDeleteDialog } from '@/features/identities/components/IdentityDeleteDialog';
 import { useState } from 'react';
 
 // JSON syntax highlighting function
@@ -38,6 +39,7 @@ export default function IdentityDetailPage() {
   const router = useRouter();
   const identityId = params.id as string;
   const [editModalOpen, setEditModalOpen] = useState(false);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   
   const { data: identity, isLoading, isError, error, refetch } = useIdentity(identityId);
   
@@ -54,8 +56,12 @@ export default function IdentityDetailPage() {
   };
   
   const handleDelete = () => {
-    console.log('Delete identity:', identityId);
-    // TODO: Implement delete functionality
+    setDeleteDialogOpen(true);
+  };
+
+  const handleDeleteSuccess = () => {
+    // Navigate back to identities list after successful delete
+    router.push('/identities');
   };
 
   if (isLoading) {
@@ -253,6 +259,14 @@ export default function IdentityDetailPage() {
             onClose={() => setEditModalOpen(false)}
             identity={identity}
             onSuccess={handleEditSuccess}
+          />
+
+          {/* Delete Dialog */}
+          <IdentityDeleteDialog
+            open={deleteDialogOpen}
+            onClose={() => setDeleteDialogOpen(false)}
+            identity={identity}
+            onSuccess={handleDeleteSuccess}
           />
         </Box>
       </AdminLayout>

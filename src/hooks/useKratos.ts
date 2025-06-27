@@ -259,8 +259,37 @@ export const useDeleteIdentity = () => {
       await deleteIdentity({ id });
       return id;
     },
-    onSuccess: () => {
+    onSuccess: (deletedId) => {
+      // Update all identities queries to remove the deleted identity
+      queryClient.setQueriesData(
+        { queryKey: ['identities'] },
+        (oldData: any) => {
+          if (!oldData) return oldData;
+          
+          return {
+            ...oldData,
+            identities: oldData.identities.filter((identity: any) => identity.id !== deletedId)
+          };
+        }
+      );
+      
+      // Also update search queries
+      queryClient.setQueriesData(
+        { queryKey: ['identities-search'] },
+        (oldData: any) => {
+          if (!oldData) return oldData;
+          
+          return {
+            ...oldData,
+            identities: oldData.identities.filter((identity: any) => identity.id !== deletedId)
+          };
+        }
+      );
+      
+      // Invalidate to ensure fresh data on next fetch
       queryClient.invalidateQueries({ queryKey: ['identities'] });
+      queryClient.invalidateQueries({ queryKey: ['identities-search'] });
+      queryClient.invalidateQueries({ queryKey: ['identities-total-count'] });
     },
   });
 };
