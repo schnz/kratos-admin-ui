@@ -163,7 +163,7 @@ export default function LoginPage() {
 
           <Grid container spacing={2}>
             {USERS.map((user) => (
-              <Grid item xs={12} sm={6} key={user.username}>
+              <Grid size={{ xs: 12, sm: 6 }} key={user.username}>
                 <Card 
                   variant="outlined" 
                   sx={{ 

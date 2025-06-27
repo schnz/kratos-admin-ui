@@ -188,7 +188,12 @@ export const useCreateIdentity = () => {
   
   return useMutation({
     mutationFn: async ({ schemaId, traits }: { schemaId: string; traits: any }) => {
-      const { data } = await createIdentity({ schema_id: schemaId, traits });
+      const { data } = await createIdentity({ 
+        createIdentityBody: { 
+          schema_id: schemaId, 
+          traits 
+        } 
+      });
       return data;
     },
     onSuccess: () => {
@@ -290,7 +295,9 @@ export const useDeleteIdentity = () => {
 export const useRecoverIdentity = () => {
   return useMutation({
     mutationFn: async ({ id }: { id: string }) => {
-      const { data } = await createRecoveryLinkForIdentity({ identity_id: id });
+      const { data } = await createRecoveryLinkForIdentity({ 
+        createRecoveryLinkForIdentityBody: { identity_id: id } 
+      });
       return data;
     },
   });

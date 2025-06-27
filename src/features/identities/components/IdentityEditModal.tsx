@@ -147,13 +147,13 @@ export const IdentityEditModal: React.FC<IdentityEditModalProps> = ({
         <Box component="form" onSubmit={handleSubmit(onSubmit)} sx={{ mt: 2 }}>
           <Grid container spacing={3}>
             {/* Basic Information */}
-            <Grid item xs={12}>
+            <Grid size={{ xs: 12 }}>
               <Typography variant="h6" gutterBottom>
                 Basic Information
               </Typography>
             </Grid>
 
-            <Grid item xs={12} md={6}>
+            <Grid size={{ xs: 12, md: 6 }}>
               <Controller
                 name="email"
                 control={control}
@@ -178,7 +178,7 @@ export const IdentityEditModal: React.FC<IdentityEditModalProps> = ({
               />
             </Grid>
 
-            <Grid item xs={12} md={6}>
+            <Grid size={{ xs: 12, md: 6 }}>
               <Controller
                 name="username"
                 control={control}
@@ -202,7 +202,7 @@ export const IdentityEditModal: React.FC<IdentityEditModalProps> = ({
               />
             </Grid>
 
-            <Grid item xs={12} md={6}>
+            <Grid size={{ xs: 12, md: 6 }}>
               <Controller
                 name="firstName"
                 control={control}
@@ -222,7 +222,7 @@ export const IdentityEditModal: React.FC<IdentityEditModalProps> = ({
               />
             </Grid>
 
-            <Grid item xs={12} md={6}>
+            <Grid size={{ xs: 12, md: 6 }}>
               <Controller
                 name="lastName"
                 control={control}
@@ -244,26 +244,26 @@ export const IdentityEditModal: React.FC<IdentityEditModalProps> = ({
 
 
             {/* Read-only Information */}
-            <Grid item xs={12}>
+            <Grid size={{ xs: 12 }}>
               <Typography variant="h6" gutterBottom sx={{ mt: 2 }}>
                 Read-only Information
               </Typography>
             </Grid>
 
-            <Grid item xs={12} md={6}>
+            <Grid size={{ xs: 12, md: 6 }}>
               <TextField
                 label="Created At"
-                value={new Date(identity.created_at).toLocaleString()}
+                value={new Date(identity.created_at || '').toLocaleString()}
                 fullWidth
                 disabled
                 variant="filled"
               />
             </Grid>
 
-            <Grid item xs={12} md={6}>
+            <Grid size={{ xs: 12, md: 6 }}>
               <TextField
                 label="Updated At"
-                value={new Date(identity.updated_at).toLocaleString()}
+                value={new Date(identity.updated_at || '').toLocaleString()}
                 fullWidth
                 disabled
                 variant="filled"

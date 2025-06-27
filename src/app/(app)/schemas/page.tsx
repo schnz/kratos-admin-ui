@@ -44,11 +44,17 @@ export default function SchemasPage() {
     if (schemasResponse) {
       
       // Check if the response has a json property
-      if (schemasResponse.json && Array.isArray(schemasResponse.json)) {
-        setParsedSchemas(schemasResponse.json);
+      if ((schemasResponse as any).json && Array.isArray((schemasResponse as any).json)) {
+        setParsedSchemas((schemasResponse as any).json);
       } else {
         // If not, try to use the response directly if it's an array
-        setParsedSchemas(Array.isArray(schemasResponse) ? schemasResponse : []);
+        const mapped = Array.isArray(schemasResponse) 
+          ? schemasResponse.map(schema => ({
+              id: schema.id || '',
+              schema: schema.schema || {},
+            }))
+          : [];
+        setParsedSchemas(mapped);
       }
     }
   }, [schemasResponse]);

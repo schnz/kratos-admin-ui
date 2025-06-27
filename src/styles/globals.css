@@ -74,3 +74,10 @@ body {
 * {
   transition: all 0.2s ease;
 }
+
+/* 
+  Note: MUI X Charts v8.6.0 has a known issue with invalid DOM property 'transform-origin'
+  This is a library bug where they use 'transform-origin' instead of 'transformOrigin'
+  The warning appears in development but doesn't affect functionality
+  This should be fixed in a future version of @mui/x-charts
+*/

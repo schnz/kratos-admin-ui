@@ -45,7 +45,7 @@ export default function SessionsPage() {
     },
   });
 
-  const sessions: Session[] = sessionsData || [];
+  const sessions = sessionsData || [];
 
   const handleChangePage = (event: unknown, newPage: number) => {
     setPage(newPage);
@@ -57,7 +57,7 @@ export default function SessionsPage() {
   };
 
   // Helper to get identity display name
-  const getIdentityDisplay = (session: Session) => {
+  const getIdentityDisplay = (session: any) => {
     if (!session.identity) return 'Unknown';
     
     const traits = session.identity.traits;
@@ -216,7 +216,7 @@ export default function SessionsPage() {
                           filteredSessions
                             .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
                             .map((session) => {
-                              const timeRemaining = getTimeRemaining(session.expires_at);
+                              const timeRemaining = getTimeRemaining(session.expires_at || '');
                               const isExpiringSoon = timeRemaining && timeRemaining.includes('m remaining');
                               
                               return (

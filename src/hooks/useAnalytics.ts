@@ -73,7 +73,7 @@ export const useIdentityAnalytics = () => {
 
       const identitiesBySchema = Object.entries(schemaGroups).map(([schema, count]) => ({
         schema,
-        count,
+        count: count as number,
       }));
 
       // Verification status (check if email is verified)
@@ -82,7 +82,7 @@ export const useIdentityAnalytics = () => {
       
       allIdentities.forEach(identity => {
         const verifiableAddresses = identity.verifiable_addresses || [];
-        const hasVerifiedEmail = verifiableAddresses.some(addr => addr.verified);
+        const hasVerifiedEmail = verifiableAddresses.some((addr: any) => addr.verified);
         if (hasVerifiedEmail) {
           verified++;
         } else {
@@ -108,28 +108,49 @@ export const useSessionAnalytics = () => {
   return useQuery({
     queryKey: ['analytics', 'sessions'],
     queryFn: async (): Promise<SessionAnalytics> => {
-      // Fetch all sessions
-      const response = await listSessions({ expand: ['identity'] });
+      // Fetch all sessions (both active and expired) for historical data
+      const response = await listSessions(false);
       const sessions = response.data;
-
+      
       const now = new Date();
       const sevenDaysAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
 
       // Count sessions in last 7 days
       const sessionsLast7Days = sessions.filter(session => {
+        if (!session.authenticated_at) return false;
         const authenticatedAt = new Date(session.authenticated_at);
+        if (isNaN(authenticatedAt.getTime())) return false;
         return authenticatedAt >= sevenDaysAgo;
       }).length;
 
-      // Group sessions by day (last 7 days)
+      // Group sessions by day (last 7 days) - count sessions that were active on each day
       const sessionsByDay: Array<{ date: string; count: number }> = [];
       for (let i = 6; i >= 0; i--) {
         const date = new Date(now.getTime() - i * 24 * 60 * 60 * 1000);
         const dateStr = date.toISOString().split('T')[0];
+        const dayStart = new Date(date.getFullYear(), date.getMonth(), date.getDate(), 0, 0, 0, 0);
+        const dayEnd = new Date(date.getFullYear(), date.getMonth(), date.getDate(), 23, 59, 59, 999);
+        
         const count = sessions.filter(session => {
+          if (!session.authenticated_at) return false;
+          
           const authenticatedAt = new Date(session.authenticated_at);
-          return authenticatedAt.toISOString().split('T')[0] === dateStr;
+          if (isNaN(authenticatedAt.getTime())) return false;
+          
+          // Session must have started before or on this day
+          if (authenticatedAt > dayEnd) return false;
+          
+          // If session has expiry, it must not have expired before this day started
+          if (session.expires_at) {
+            const expiresAt = new Date(session.expires_at);
+            if (isNaN(expiresAt.getTime())) return true; // If invalid expiry, assume still active
+            if (expiresAt < dayStart) return false; // Expired before this day
+          }
+          
+          // Session was active during this day
+          return true;
         }).length;
+        
         sessionsByDay.push({ date: dateStr, count });
       }
 
@@ -137,8 +158,8 @@ export const useSessionAnalytics = () => {
       const sessionDurations = sessions
         .filter(session => session.authenticated_at && session.issued_at)
         .map(session => {
-          const authenticated = new Date(session.authenticated_at).getTime();
-          const issued = new Date(session.issued_at).getTime();
+          const authenticated = new Date(session.authenticated_at || '').getTime();
+          const issued = new Date(session.issued_at || '').getTime();
           return Math.abs(authenticated - issued) / (1000 * 60); // minutes
         });
 
@@ -146,9 +167,19 @@ export const useSessionAnalytics = () => {
         ? sessionDurations.reduce((sum, duration) => sum + duration, 0) / sessionDurations.length
         : 0;
 
+      // Count truly active sessions (not expired)
+      const activeSessions = sessions.filter(session => {
+        // Check if session has an expiry date and if it's still valid
+        if (!session.expires_at) return true; // If no expiry, consider active
+        const expiresAt = new Date(session.expires_at);
+        if (isNaN(expiresAt.getTime())) return true; // If invalid date, consider active
+        return expiresAt > now;
+      }).length;
+
+
       return {
         totalSessions: sessions.length,
-        activeSessions: sessions.filter(session => session.active).length,
+        activeSessions,
         sessionsByDay,
         averageSessionDuration: Math.round(averageSessionDuration),
         sessionsLast7Days,

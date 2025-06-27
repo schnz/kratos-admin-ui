@@ -113,8 +113,8 @@ const IdentitiesTable: React.FC = () => {
       field: 'email', 
       headerName: 'Email', 
       width: 250,
-      valueGetter: (params) => {
-        const traits = (params.row.traits as any);
+      valueGetter: (value, row) => {
+        const traits = (row.traits as any);
         return traits?.email || 'N/A';
       }
     },
@@ -122,8 +122,8 @@ const IdentitiesTable: React.FC = () => {
       field: 'username', 
       headerName: 'Username', 
       width: 150,
-      valueGetter: (params) => {
-        const traits = (params.row.traits as any);
+      valueGetter: (value, row) => {
+        const traits = (row.traits as any);
         return traits?.username || 'N/A';
       }
     },
@@ -146,16 +146,16 @@ const IdentitiesTable: React.FC = () => {
       field: 'created_at', 
       headerName: 'Created', 
       width: 200,
-      valueFormatter: (params) => {
-        return new Date(params.value as string).toLocaleString();
+      valueFormatter: (value) => {
+        return new Date(value as string).toLocaleString();
       }
     },
     { 
       field: 'updated_at', 
       headerName: 'Updated', 
       width: 200,
-      valueFormatter: (params) => {
-        return new Date(params.value as string).toLocaleString();
+      valueFormatter: (value) => {
+        return new Date(value as string).toLocaleString();
       }
     },
     {
@@ -318,7 +318,7 @@ const IdentitiesTable: React.FC = () => {
           columns={columns}
           checkboxSelection
           onRowSelectionModelChange={(newSelection) => {
-            setSelectedRows(newSelection as string[]);
+            setSelectedRows(newSelection as unknown as string[]);
           }}
           hideFooterPagination
           slots={{

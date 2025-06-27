@@ -137,7 +137,7 @@ export default function IdentityDetailPage() {
 
           <Grid container spacing={3}>
             {/* Basic Information */}
-            <Grid item xs={12} md={6}>
+            <Grid size={{ xs: 12, md: 6 }}>
               <Card>
                 <CardContent>
                   <Typography variant="h6" gutterBottom>
@@ -171,7 +171,7 @@ export default function IdentityDetailPage() {
                       Created At
                     </Typography>
                     <Typography variant="body1">
-                      {formatDate(identity.created_at)}
+                      {formatDate(identity.created_at || '')}
                     </Typography>
                   </Box>
 
@@ -180,7 +180,7 @@ export default function IdentityDetailPage() {
                       Updated At
                     </Typography>
                     <Typography variant="body1">
-                      {formatDate(identity.updated_at)}
+                      {formatDate(identity.updated_at || '')}
                     </Typography>
                   </Box>
                 </CardContent>
@@ -188,7 +188,7 @@ export default function IdentityDetailPage() {
             </Grid>
 
             {/* Traits */}
-            <Grid item xs={12} md={6}>
+            <Grid size={{ xs: 12, md: 6 }}>
               <Card>
                 <CardContent>
                   <Typography variant="h6" gutterBottom>
@@ -217,7 +217,7 @@ export default function IdentityDetailPage() {
             </Grid>
 
             {/* Raw JSON */}
-            <Grid item xs={12}>
+            <Grid size={{ xs: 12 }}>
               <Card>
                 <CardContent>
                   <Typography variant="h6" gutterBottom>

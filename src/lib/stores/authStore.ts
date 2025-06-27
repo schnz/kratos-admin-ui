@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
-import { findUserByCredentials, UserCredentials, UserRole } from '../config/users';
+import { findUserByCredentials, UserCredentials, UserRole } from '../../config/users';
 
 // Define user interface
 export interface User {
@@ -88,4 +88,4 @@ export const useLogout = () => useAuthStore((state) => state.logout);
 export const useHasPermission = () => useAuthStore((state) => state.hasPermission);
 
 // Re-export UserRole for backward compatibility
-export { UserRole } from '../config/users';
+export { UserRole } from '../../config/users';

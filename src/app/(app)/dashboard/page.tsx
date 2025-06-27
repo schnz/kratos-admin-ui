@@ -82,7 +82,7 @@ export default function Dashboard() {
 
           {/* Key Metrics Cards */}
           <Grid container spacing={3} sx={{ mb: 4 }}>
-            <Grid item xs={12} sm={6} lg={1.7}>
+            <Grid size={{ xs: 12, sm: 6, lg: 1.7 }}>
               <Card>
                 <CardContent>
                   <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
@@ -101,7 +101,7 @@ export default function Dashboard() {
               </Card>
             </Grid>
 
-            <Grid item xs={12} sm={6} lg={1.7}>
+            <Grid size={{ xs: 12, sm: 6, lg: 1.7 }}>
               <Card>
                 <CardContent>
                   <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
@@ -120,7 +120,7 @@ export default function Dashboard() {
               </Card>
             </Grid>
 
-            <Grid item xs={12} sm={6} lg={1.7}>
+            <Grid size={{ xs: 12, sm: 6, lg: 1.7 }}>
               <Card>
                 <CardContent>
                   <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
@@ -139,7 +139,7 @@ export default function Dashboard() {
               </Card>
             </Grid>
 
-            <Grid item xs={12} sm={6} lg={1.7}>
+            <Grid size={{ xs: 12, sm: 6, lg: 1.7 }}>
               <Card>
                 <CardContent>
                   <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
@@ -161,7 +161,7 @@ export default function Dashboard() {
               </Card>
             </Grid>
 
-            <Grid item xs={12} sm={6} lg={1.7}>
+            <Grid size={{ xs: 12, sm: 6, lg: 1.7 }}>
               <Card>
                 <CardContent>
                   <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
@@ -180,7 +180,7 @@ export default function Dashboard() {
               </Card>
             </Grid>
 
-            <Grid item xs={12} sm={6} lg={1.7}>
+            <Grid size={{ xs: 12, sm: 6, lg: 1.7 }}>
               <Card>
                 <CardContent>
                   <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
@@ -190,7 +190,7 @@ export default function Dashboard() {
                     </Typography>
                   </Box>
                   <Typography variant="h3" sx={{ mb: 1 }}>
-                    {system.data?.systemHealth === 'Healthy' ? '✓' : system.data?.systemHealth || '?'}
+                    {system.data?.systemHealth === 'healthy' ? '✓' : system.data?.systemHealth || '?'}
                   </Typography>
                   <Typography variant="body2" color="text.secondary">
                     {system.data?.systemHealth || 'Unknown'}
@@ -199,7 +199,7 @@ export default function Dashboard() {
               </Card>
             </Grid>
 
-            <Grid item xs={12} sm={6} lg={1.7}>
+            <Grid size={{ xs: 12, sm: 6, lg: 1.7 }}>
               <Card>
                 <CardContent>
                   <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
@@ -228,7 +228,7 @@ export default function Dashboard() {
           {/* Charts Section */}
           <Grid container spacing={3}>
             {/* User Growth Chart */}
-            <Grid item xs={12} lg={8}>
+            <Grid size={{ xs: 12, lg: 8 }}>
               <Paper sx={{ p: 3, height: 450 }}>
                 <Typography variant="h6" gutterBottom>
                   New User Registrations (Last 30 Days)
@@ -261,7 +261,7 @@ export default function Dashboard() {
             </Grid>
 
             {/* Identity Schema Distribution */}
-            <Grid item xs={12} lg={4}>
+            <Grid size={{ xs: 12, lg: 4 }}>
               <Paper sx={{ p: 3, height: 450 }}>
                 <Typography variant="h6" gutterBottom>
                   Users by Schema
@@ -278,16 +278,13 @@ export default function Dashboard() {
                       outerRadius: 100,
                       paddingAngle: 3,
                       cornerRadius: 4,
-                      highlightScope: { faded: 'global', highlighted: 'item' },
-                      faded: { innerRadius: 30, additionalRadius: -30, color: 'gray' },
+                      highlightScope: { fade: 'global', highlight: 'item' },
                     },
                   ]}
                   height={350}
                   slotProps={{
                     legend: {
-                      direction: 'column',
-                      position: { vertical: 'bottom', horizontal: 'middle' },
-                      padding: 0,
+                      position: { vertical: 'bottom', horizontal: 'center' },
                     },
                   }}
                 />
@@ -295,7 +292,7 @@ export default function Dashboard() {
             </Grid>
 
             {/* Session Activity Chart */}
-            <Grid item xs={12} lg={8}>
+            <Grid size={{ xs: 12, lg: 8 }}>
               <Paper sx={{ p: 3, height: 450 }}>
                 <Typography variant="h6" gutterBottom>
                   Session Activity (Last 7 Days)
@@ -305,6 +302,9 @@ export default function Dashboard() {
                     data: sessionDays, 
                     scaleType: 'point',
                     tickSize: 0
+                  }]}
+                  yAxis={[{
+                    min: 0
                   }]}
                   series={[{ 
                     data: sessionValues, 
@@ -324,7 +324,7 @@ export default function Dashboard() {
             </Grid>
 
             {/* Verification Status */}
-            <Grid item xs={12} lg={4}>
+            <Grid size={{ xs: 12, lg: 4 }}>
               <Paper sx={{ p: 3, height: 450 }}>
                 <Typography variant="h6" gutterBottom>
                   Email Verification Rate
