@@ -48,6 +48,130 @@ export const useIdentities = (params?: { pageSize?: number; pageToken?: string }
   });
 };
 
+// Multi-page search hook that fetches across pages until target count is reached
+export const useIdentitiesSearch = (params?: { pageSize?: number; searchTerm?: string }) => {
+  const pageSize = params?.pageSize || 25;
+  const searchTerm = params?.searchTerm?.trim();
+  
+  return useQuery({
+    queryKey: ['identities-search', pageSize, searchTerm],
+    queryFn: async () => {
+      // If no search term, use regular pagination
+      if (!searchTerm) {
+        const requestParams: any = { pageSize };
+        const response = await listIdentities(requestParams);
+        
+        const linkHeader = response.headers?.link;
+        let nextPageToken = null;
+        
+        if (linkHeader) {
+          const nextMatch = linkHeader.match(/<[^>]*[?&]page_token=([^&>]+)[^>]*>;\s*rel="next"/);
+          if (nextMatch) {
+            nextPageToken = nextMatch[1];
+          }
+        }
+        
+        return {
+          identities: response.data,
+          nextPageToken,
+          hasMore: !!nextPageToken,
+          isSearchResult: false,
+          totalFetched: response.data.length,
+        };
+      }
+      
+      // Multi-page search logic
+      let allIdentities: any[] = [];
+      let matchedIdentities: any[] = [];
+      let pageToken: string | undefined = undefined;
+      let hasMore = true;
+      let pageCount = 0;
+      const maxPages = 20; // Prevent infinite loops
+      
+      console.log(`Starting search for: "${searchTerm}"`);
+      
+      while (matchedIdentities.length < pageSize && hasMore && pageCount < maxPages) {
+        console.log(`Searching page ${pageCount + 1} (found ${matchedIdentities.length}/${pageSize})`);
+        
+        try {
+          const requestParams: any = { pageSize: 250 }; // Fetch max per page for efficiency
+          if (pageToken) {
+            requestParams.pageToken = pageToken;
+          }
+          
+          const response = await listIdentities(requestParams);
+          const pageIdentities = response.data;
+          
+          // Filter current page for matches
+          const pageMatches = pageIdentities.filter((identity: any) => {
+            const traits = identity.traits as any;
+            const email = String(traits?.email || '');
+            const username = String(traits?.username || '');
+            const firstName = String(traits?.first_name || traits?.firstName || '');
+            const lastName = String(traits?.last_name || traits?.lastName || '');
+            const name = String(traits?.name || '');
+            const id = String(identity.id || '');
+            
+            const searchLower = searchTerm.toLowerCase();
+            return (
+              id.toLowerCase().includes(searchLower) ||
+              email.toLowerCase().includes(searchLower) ||
+              username.toLowerCase().includes(searchLower) ||
+              firstName.toLowerCase().includes(searchLower) ||
+              lastName.toLowerCase().includes(searchLower) ||
+              name.toLowerCase().includes(searchLower)
+            );
+          });
+          
+          matchedIdentities = [...matchedIdentities, ...pageMatches];
+          allIdentities = [...allIdentities, ...pageIdentities];
+          
+          // Extract next page token
+          const linkHeader = response.headers?.link;
+          let nextPageToken = null;
+          
+          if (linkHeader) {
+            const nextMatch = linkHeader.match(/<[^>]*[?&]page_token=([^&>]+)[^>]*>;\s*rel="next"/);
+            if (nextMatch) {
+              nextPageToken = nextMatch[1];
+            }
+          }
+          
+          hasMore = !!nextPageToken;
+          pageToken = nextPageToken;
+          pageCount++;
+          
+          console.log(`Page ${pageCount}: Found ${pageMatches.length} matches (total: ${matchedIdentities.length})`);
+          
+          // Small delay between requests
+          if (hasMore && matchedIdentities.length < pageSize) {
+            await new Promise(resolve => setTimeout(resolve, 100));
+          }
+        } catch (error) {
+          console.error(`Error searching page ${pageCount + 1}:`, error);
+          hasMore = false;
+        }
+      }
+      
+      // Return up to pageSize results
+      const finalResults = matchedIdentities.slice(0, pageSize);
+      
+      console.log(`Search complete: ${finalResults.length} results from ${pageCount} pages`);
+      
+      return {
+        identities: finalResults,
+        nextPageToken: matchedIdentities.length > pageSize ? 'search-has-more' : null,
+        hasMore: matchedIdentities.length > pageSize || (hasMore && matchedIdentities.length === pageSize),
+        isSearchResult: true,
+        totalFetched: allIdentities.length,
+        totalMatched: matchedIdentities.length,
+      };
+    },
+    enabled: true,
+    staleTime: 30 * 1000, // Cache search results for 30 seconds
+  });
+};
+
 export const useIdentity = (id: string) => {
   return useQuery({
     queryKey: ['identity', id],

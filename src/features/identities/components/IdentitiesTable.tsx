@@ -1,29 +1,96 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { DataGrid, GridColDef, GridToolbar } from '@mui/x-data-grid';
 import { Box, Button, Typography, CircularProgress, TextField, InputAdornment, IconButton, Tooltip, Paper, Pagination, FormControl, InputLabel, Select, MenuItem } from '@mui/material';
 import { Add, Search, Refresh, NavigateBefore, NavigateNext } from '@mui/icons-material';
-import { useIdentities } from '@/hooks/useKratos';
+import { useIdentities, useIdentitiesSearch } from '@/hooks/useKratos';
 import { Identity } from '@ory/kratos-client';
 
 const IdentitiesTable: React.FC = () => {
   const [selectedRows, setSelectedRows] = useState<string[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
+  const [debouncedSearchTerm, setDebouncedSearchTerm] = useState('');
   const [pageSize, setPageSize] = useState(25);
   const [pageToken, setPageToken] = useState<string | undefined>(undefined);
   const [pageHistory, setPageHistory] = useState<(string | undefined)[]>([undefined]);
   
-  const { data, isLoading, isError, error, refetch } = useIdentities({
+  // Debounce search term to avoid API calls on every keystroke
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedSearchTerm(searchTerm);
+    }, 300); // 300ms delay
+    
+    return () => clearTimeout(timer);
+  }, [searchTerm]);
+  
+  // Use search hook when there's a debounced search term, otherwise use regular pagination
+  const isSearching = debouncedSearchTerm.trim().length > 0;
+  
+  const { 
+    data: regularData, 
+    isLoading: regularLoading, 
+    isError: regularError, 
+    error: regularErrorDetails, 
+    refetch: regularRefetch 
+  } = useIdentities({
     pageSize,
     pageToken,
   });
+  
+  const { 
+    data: searchData, 
+    isLoading: searchLoading, 
+    isError: searchError, 
+    error: searchErrorDetails, 
+    refetch: searchRefetch 
+  } = useIdentitiesSearch({
+    pageSize,
+    searchTerm: debouncedSearchTerm,
+  });
+  
+  // Always use regular data for base identities, never show search loading
+  const data = regularData;
+  const isLoading = regularLoading;
+  const isError = regularError;
+  const error = regularErrorDetails;
+  const refetch = regularRefetch;
 
-  const identities = data?.identities || [];
+  const baseIdentities = data?.identities || [];
   const hasMore = data?.hasMore || false;
   const nextPageToken = data?.nextPageToken;
-
-  // For server-side pagination, we don't filter client-side anymore
-  // The search will need to be implemented server-side in the future
-  const displayedIdentities = identities;
+  
+  // Get search results if available (for background fetching)
+  const searchResults = searchData?.identities || [];
+  const searchComplete = !searchLoading && isSearching;
+  
+  // Apply instant client-side filtering while typing
+  const clientFilteredIdentities = React.useMemo(() => {
+    if (!searchTerm.trim()) return baseIdentities;
+    
+    const searchLower = searchTerm.toLowerCase();
+    return baseIdentities.filter((identity: Identity) => {
+      const traits = identity.traits as any;
+      const email = String(traits?.email || '');
+      const username = String(traits?.username || '');
+      const firstName = String(traits?.first_name || traits?.firstName || '');
+      const lastName = String(traits?.last_name || traits?.lastName || '');
+      const name = String(traits?.name || '');
+      const id = String(identity.id || '');
+      
+      return (
+        id.toLowerCase().includes(searchLower) ||
+        email.toLowerCase().includes(searchLower) ||
+        username.toLowerCase().includes(searchLower) ||
+        firstName.toLowerCase().includes(searchLower) ||
+        lastName.toLowerCase().includes(searchLower) ||
+        name.toLowerCase().includes(searchLower)
+      );
+    });
+  }, [baseIdentities, searchTerm]);
+  
+  // Use search results if search is complete and we have better results
+  const shouldUseSearchResults = searchComplete && searchResults.length > clientFilteredIdentities.length;
+  const displayedIdentities = shouldUseSearchResults ? searchResults : clientFilteredIdentities;
+  const isUsingSearchResults = shouldUseSearchResults;
 
   const columns: GridColDef[] = [
     { 
@@ -134,6 +201,9 @@ const IdentitiesTable: React.FC = () => {
   };
 
   const handleNextPage = () => {
+    // Disable pagination during search
+    if (searchTerm.trim()) return;
+    
     if (nextPageToken) {
       setPageHistory(prev => [...prev, pageToken]);
       setPageToken(nextPageToken);
@@ -141,6 +211,9 @@ const IdentitiesTable: React.FC = () => {
   };
 
   const handlePreviousPage = () => {
+    // Disable pagination during search
+    if (searchTerm.trim()) return;
+    
     if (pageHistory.length > 1) {
       const newHistory = [...pageHistory];
       newHistory.pop(); // Remove current page
@@ -156,8 +229,8 @@ const IdentitiesTable: React.FC = () => {
     setPageHistory([undefined]);
   };
 
-  const canGoPrevious = pageHistory.length > 1;
-  const canGoNext = hasMore;
+  const canGoPrevious = !searchTerm.trim() && pageHistory.length > 1;
+  const canGoNext = !searchTerm.trim() && hasMore;
 
   if (isLoading) {
     return (
@@ -190,7 +263,7 @@ const IdentitiesTable: React.FC = () => {
 
       <Box display="flex" justifyContent="space-between" alignItems="center" mb={3}>
         <TextField
-          placeholder="Search identities..."
+          placeholder="Search identities (ID, email, username, name)..."
           variant="outlined"
           size="small"
           value={searchTerm}
@@ -202,7 +275,11 @@ const IdentitiesTable: React.FC = () => {
               </InputAdornment>
             ),
           }}
-          sx={{ width: 300 }}
+          sx={{ width: 350 }}
+          helperText={
+            searchTerm && searchLoading ? "Finding more matches in background..." :
+            searchTerm ? `Filtering ${baseIdentities.length} current page identities` : ""
+          }
         />
         <Box>
           <Tooltip title="Refresh">
@@ -245,7 +322,10 @@ const IdentitiesTable: React.FC = () => {
       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mt: 2, p: 2 }}>
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
           <Typography variant="body2" color="text.secondary">
-            Showing {identities.length} identities
+            {searchTerm.trim()
+              ? `Found ${displayedIdentities.length} matches${isUsingSearchResults ? ' (from multi-page search)' : ' (from current page)'}`
+              : `Showing ${displayedIdentities.length} identities`
+            }
           </Typography>
           <FormControl size="small" sx={{ minWidth: 120 }}>
             <InputLabel>Per page</InputLabel>
