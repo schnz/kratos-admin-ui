@@ -9,13 +9,77 @@ import { UserRole } from '@/config/users';
 import { useState, useEffect } from 'react';
 
 export default function Dashboard() {
-  const { data: identities, isLoading: identitiesLoading } = useQuery({
-    queryKey: ['identities'],
+  // Fetch multiple pages to get accurate total count
+  const { data: identitiesData, isLoading: identitiesLoading } = useQuery({
+    queryKey: ['identities-total-count'],
     queryFn: async () => {
-      const response = await listIdentities();
-      return response.data;
+      let allIdentities: any[] = [];
+      let pageToken = undefined;
+      let hasMore = true;
+      let pageCount = 0;
+      const maxPages = 20; // Allow up to 20 pages (20 * 250 = 5,000 identities)
+      
+      console.log('Starting identity count fetch...');
+      
+      while (hasMore && pageCount < maxPages) {
+        console.log(`Fetching page ${pageCount + 1} with token: ${pageToken}`);
+        
+        try {
+          const requestParams: any = { 
+            pageSize: 250, // Use max that works - API rejects 500
+          };
+          
+          // Only add pageToken if it's not the first page
+          if (pageToken) {
+            requestParams.pageToken = pageToken;
+          }
+          
+          const response = await listIdentities(requestParams);
+          
+          console.log(`Page ${pageCount + 1}: Got ${response.data.length} identities`);
+          allIdentities = [...allIdentities, ...response.data];
+          
+          // Extract next page token from Link header
+          const linkHeader = response.headers?.link;
+          let nextPageToken = null;
+          
+          if (linkHeader) {
+            const nextMatch = linkHeader.match(/page_token=([^&>]+)[^>]*>;\s*rel="next"/);
+            if (nextMatch) {
+              nextPageToken = nextMatch[1];
+            }
+          }
+          
+          hasMore = !!nextPageToken;
+          pageToken = nextPageToken || "";
+          pageCount++;
+          
+          console.log(`Next token: ${nextPageToken}, Has more: ${hasMore}`);
+          
+          // Small delay to avoid overwhelming the API
+          if (hasMore) {
+            await new Promise(resolve => setTimeout(resolve, 100));
+          }
+        } catch (error) {
+          console.error(`Error fetching page ${pageCount + 1}:`, error);
+          hasMore = false; // Stop on error
+        }
+      }
+      
+      console.log(`Total identities fetched: ${allIdentities.length}`);
+      
+      return {
+        identities: allIdentities,
+        totalCount: allIdentities.length,
+        isEstimate: hasMore // If we stopped due to maxPages, it's an estimate
+      };
     },
+    staleTime: 5 * 60 * 1000, // Cache for 5 minutes
   });
+  
+  const identities = identitiesData?.identities || [];
+  const totalCount = identitiesData?.totalCount || 0;
+  const isEstimate = identitiesData?.isEstimate || false;
 
   const { data: sessions, isLoading: sessionsLoading } = useQuery({
     queryKey: ['sessions'],
@@ -67,10 +131,10 @@ export default function Dashboard() {
                   Identities
                 </Typography>
                 <Typography component="p" variant="h4">
-                  {identitiesLoading ? '...' : identities?.length || 0}
+                  {identitiesLoading ? '...' : `${totalCount}${isEstimate ? '+' : ''}`}
                 </Typography>
                 <Typography color="text.secondary" sx={{ flex: 1 }}>
-                  Total registered users
+                  {isEstimate ? 'Registered users (estimated)' : 'Total registered users'}
                 </Typography>
               </Paper>
             </Grid>

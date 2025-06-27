@@ -12,12 +12,38 @@ import {
 } from '@/lib/api/kratos/client';
 
 // Identity hooks
-export const useIdentities = () => {
+export const useIdentities = (params?: { pageSize?: number; pageToken?: string }) => {
+  const pageSize = params?.pageSize || 25;
+  const pageToken = params?.pageToken;
+  
   return useQuery({
-    queryKey: ['identities'],
+    queryKey: ['identities', pageToken, pageSize],
     queryFn: async () => {
-      const { data } = await listIdentities();
-      return data;
+      const requestParams: any = { pageSize };
+      if (pageToken) {
+        requestParams.pageToken = pageToken;
+      }
+      
+      const response = await listIdentities(requestParams);
+      
+      // Extract next page token from Link header if available
+      const linkHeader = response.headers?.link;
+      let nextPageToken = null;
+      
+      if (linkHeader) {
+        const nextMatch = linkHeader.match(/<[^>]*[?&]page_token=([^&>]+)[^>]*>;\s*rel="next"/);
+        if (nextMatch) {
+          nextPageToken = nextMatch[1];
+        }
+      }
+      
+      return {
+        identities: response.data,
+        nextPageToken,
+        hasMore: !!nextPageToken,
+        pageSize,
+        currentPageToken: pageToken,
+      };
     },
   });
 };

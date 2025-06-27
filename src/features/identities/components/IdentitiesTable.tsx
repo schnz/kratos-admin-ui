@@ -1,31 +1,29 @@
 import React, { useState } from 'react';
 import { DataGrid, GridColDef, GridToolbar } from '@mui/x-data-grid';
-import { Box, Button, Typography, CircularProgress, TextField, InputAdornment, IconButton, Tooltip, Paper } from '@mui/material';
-import { Add, Search, Refresh } from '@mui/icons-material';
+import { Box, Button, Typography, CircularProgress, TextField, InputAdornment, IconButton, Tooltip, Paper, Pagination, FormControl, InputLabel, Select, MenuItem } from '@mui/material';
+import { Add, Search, Refresh, NavigateBefore, NavigateNext } from '@mui/icons-material';
 import { useIdentities } from '@/hooks/useKratos';
 import { Identity } from '@ory/kratos-client';
 
 const IdentitiesTable: React.FC = () => {
-  const { data: identities, isLoading, isError, error, refetch } = useIdentities();
   const [selectedRows, setSelectedRows] = useState<string[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
+  const [pageSize, setPageSize] = useState(25);
+  const [pageToken, setPageToken] = useState<string | undefined>(undefined);
+  const [pageHistory, setPageHistory] = useState<(string | undefined)[]>([undefined]);
+  
+  const { data, isLoading, isError, error, refetch } = useIdentities({
+    pageSize,
+    pageToken,
+  });
 
-  const filteredIdentities = React.useMemo(() => {
-    if (!identities) return [];
-    
-    return identities.filter((identity: Identity) => {
-      const searchLower = searchTerm.toLowerCase();
-      const traits = identity.traits as any;
-      const email = traits?.email || '';
-      const username = traits?.username || '';
-      
-      return (
-        identity.id.toLowerCase().includes(searchLower) ||
-        email.toLowerCase().includes(searchLower) ||
-        username.toLowerCase().includes(searchLower)
-      );
-    });
-  }, [identities, searchTerm]);
+  const identities = data?.identities || [];
+  const hasMore = data?.hasMore || false;
+  const nextPageToken = data?.nextPageToken;
+
+  // For server-side pagination, we don't filter client-side anymore
+  // The search will need to be implemented server-side in the future
+  const displayedIdentities = identities;
 
   const columns: GridColDef[] = [
     { 
@@ -135,6 +133,32 @@ const IdentitiesTable: React.FC = () => {
     refetch();
   };
 
+  const handleNextPage = () => {
+    if (nextPageToken) {
+      setPageHistory(prev => [...prev, pageToken]);
+      setPageToken(nextPageToken);
+    }
+  };
+
+  const handlePreviousPage = () => {
+    if (pageHistory.length > 1) {
+      const newHistory = [...pageHistory];
+      newHistory.pop(); // Remove current page
+      const previousToken = newHistory[newHistory.length - 1];
+      setPageHistory(newHistory);
+      setPageToken(previousToken);
+    }
+  };
+
+  const handlePageSizeChange = (newPageSize: number) => {
+    setPageSize(newPageSize);
+    setPageToken(undefined);
+    setPageHistory([undefined]);
+  };
+
+  const canGoPrevious = pageHistory.length > 1;
+  const canGoNext = hasMore;
+
   if (isLoading) {
     return (
       <Box display="flex" justifyContent="center" alignItems="center" height="400px">
@@ -199,18 +223,13 @@ const IdentitiesTable: React.FC = () => {
 
       <Box height={600} width="100%">
         <DataGrid
-          rows={filteredIdentities}
+          rows={displayedIdentities}
           columns={columns}
           checkboxSelection
           onRowSelectionModelChange={(newSelection) => {
             setSelectedRows(newSelection as string[]);
           }}
-          initialState={{
-            pagination: {
-              paginationModel: { page: 0, pageSize: 10 },
-            },
-          }}
-          pageSizeOptions={[5, 10, 25, 50]}
+          hideFooterPagination
           slots={{
             toolbar: GridToolbar,
           }}
@@ -220,6 +239,49 @@ const IdentitiesTable: React.FC = () => {
             },
           }}
         />
+      </Box>
+
+      {/* Custom Pagination Controls */}
+      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mt: 2, p: 2 }}>
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+          <Typography variant="body2" color="text.secondary">
+            Showing {identities.length} identities
+          </Typography>
+          <FormControl size="small" sx={{ minWidth: 120 }}>
+            <InputLabel>Per page</InputLabel>
+            <Select
+              value={pageSize}
+              label="Per page"
+              onChange={(e) => handlePageSizeChange(Number(e.target.value))}
+            >
+              <MenuItem value={10}>10</MenuItem>
+              <MenuItem value={25}>25</MenuItem>
+              <MenuItem value={50}>50</MenuItem>
+              <MenuItem value={100}>100</MenuItem>
+            </Select>
+          </FormControl>
+        </Box>
+        
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+          <Button
+            variant="outlined"
+            size="small"
+            startIcon={<NavigateBefore />}
+            onClick={handlePreviousPage}
+            disabled={!canGoPrevious || isLoading}
+          >
+            Previous
+          </Button>
+          <Button
+            variant="outlined"
+            size="small"
+            endIcon={<NavigateNext />}
+            onClick={handleNextPage}
+            disabled={!canGoNext || isLoading}
+          >
+            Next
+          </Button>
+        </Box>
       </Box>
     </Paper>
   );
