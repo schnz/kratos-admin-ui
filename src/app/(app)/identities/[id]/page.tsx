@@ -259,6 +259,96 @@ export default function IdentityDetailPage() {
               </Card>
             </Grid>
 
+            {/* Public Metadata */}
+            <Grid size={{ xs: 12, md: 6 }}>
+              <Card>
+                <CardContent>
+                  <Typography variant="h6" gutterBottom>
+                    Public Metadata
+                  </Typography>
+                  <Divider sx={{ mb: 2 }} />
+
+                  {identity.metadata_public && Object.keys(identity.metadata_public).length > 0 ? (
+                    <Box
+                      sx={{
+                        borderRadius: 1,
+                        overflow: 'auto',
+                        maxHeight: '400px',
+                        background: theme.palette.background.default,
+                      }}
+                    >
+                      <SyntaxHighlighter
+                        language="json"
+                        style={theme.palette.mode === 'dark' ? vs2015 : github}
+                        customStyle={{
+                          margin: 0,
+                          padding: '1rem',
+                          fontSize: '0.875rem',
+                          background: theme.palette.mode === 'dark' ? '#1e1e1e' : '#f8f9fa',
+                          borderRadius: 'var(--radius)',
+                          lineHeight: 1.4,
+                          border: `1px solid ${theme.palette.divider}`,
+                        }}
+                        showLineNumbers={false}
+                        wrapLongLines={true}
+                      >
+                        {JSON.stringify(identity.metadata_public, null, 2)}
+                      </SyntaxHighlighter>
+                    </Box>
+                  ) : (
+                    <Typography variant="body2" color="text.secondary">
+                      No public metadata available
+                    </Typography>
+                  )}
+                </CardContent>
+              </Card>
+            </Grid>
+
+            {/* Admin Metadata */}
+            <Grid size={{ xs: 12, md: 6 }}>
+              <Card>
+                <CardContent>
+                  <Typography variant="h6" gutterBottom>
+                    Admin Metadata
+                  </Typography>
+                  <Divider sx={{ mb: 2 }} />
+
+                  {identity.metadata_admin && Object.keys(identity.metadata_admin).length > 0 ? (
+                    <Box
+                      sx={{
+                        borderRadius: 1,
+                        overflow: 'auto',
+                        maxHeight: '400px',
+                        background: theme.palette.background.default,
+                      }}
+                    >
+                      <SyntaxHighlighter
+                        language="json"
+                        style={theme.palette.mode === 'dark' ? vs2015 : github}
+                        customStyle={{
+                          margin: 0,
+                          padding: '1rem',
+                          fontSize: '0.875rem',
+                          background: theme.palette.mode === 'dark' ? '#1e1e1e' : '#f8f9fa',
+                          borderRadius: 'var(--radius)',
+                          lineHeight: 1.4,
+                          border: `1px solid ${theme.palette.divider}`,
+                        }}
+                        showLineNumbers={false}
+                        wrapLongLines={true}
+                      >
+                        {JSON.stringify(identity.metadata_admin, null, 2)}
+                      </SyntaxHighlighter>
+                    </Box>
+                  ) : (
+                    <Typography variant="body2" color="text.secondary">
+                      No admin metadata available
+                    </Typography>
+                  )}
+                </CardContent>
+              </Card>
+            </Grid>
+
             {/* Sessions Section */}
             <Grid size={{ xs: 12 }}>
               <Card>
