@@ -26,17 +26,30 @@ The setup includes three identity schemas:
 
 ## Quick Start
 
+### Development Mode (Build from Source)
+
 1. Start all services:
 
    ```bash
    cd dev
-   docker-compose up -d
+   docker compose up -d
    ```
+
+### Production Mode (Use Pre-built Image)
+
+1. Start all services with production image:
+
+   ```bash
+   cd dev
+   docker compose -f docker-compose.yml -f docker-compose.override.prod.yml up -d
+   ```
+
+### Common Steps (Both Modes)
 
 2. Create test identities (first time only):
 
    ```bash
-   docker-compose --profile init up init-identities
+   docker compose --profile init up init-identities
    ```
 
    This creates 37 test identities:
@@ -53,7 +66,7 @@ The setup includes three identity schemas:
 
 4. Stop services:
    ```bash
-   docker-compose down
+   docker compose down
    ```
 
 ## Re-creating Test Data
@@ -62,19 +75,48 @@ To recreate test identities:
 
 ```bash
 # Remove existing data
-docker-compose down -v
+docker compose down -v
 
 # Start services and create identities
-docker-compose up -d
-docker-compose --profile init up init-identities
+docker compose up -d
+docker compose --profile init up init-identities
 ```
 
-## SELinux Systems
+## Override Configurations
 
-For systems with SELinux enabled, use the override file:
+### SELinux Systems
+
+For systems with SELinux enabled, use the SELinux override file:
 
 ```bash
-docker-compose -f docker-compose.yml -f docker-compose.override.selinux.yml up -d
+docker compose -f docker-compose.yml -f docker-compose.override.selinux.yml up -d
+```
+
+### Production Docker Image
+
+To use the pre-built production Docker image instead of building from source:
+
+```bash
+docker compose -f docker-compose.yml -f docker-compose.override.prod.yml up -d
+```
+
+This is useful for:
+- Testing the production build locally
+- Faster startup (no build time)
+- Testing the exact image that will be deployed
+
+The production override:
+- Uses `dhiagharsallaoui/kratos-admin-ui:latest` from Docker Hub
+- Removes development volume mounts
+- Sets `NODE_ENV=production`
+- Uses runtime environment variables only
+
+### Combining Override Files
+
+You can combine multiple override files. For example, to use the production image on a SELinux system:
+
+```bash
+docker compose -f docker-compose.yml -f docker-compose.override.prod.yml -f docker-compose.override.selinux.yml up -d
 ```
 
 ## Development
@@ -91,5 +133,5 @@ The admin UI is configured with:
 ## Troubleshooting
 
 - Ensure ports 3000, 4433, 4434, 4455, 4436, and 4437 are not in use
-- Check logs: `docker-compose logs [service-name]`
-- Rebuild containers: `docker-compose up --build`
+- Check logs: `docker compose logs [service-name]`
+- Rebuild containers: `docker compose up --build`
