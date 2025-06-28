@@ -15,50 +15,92 @@ A modern, responsive admin interface for [Ory Kratos](https://www.ory.sh/kratos/
 ### 🎯 Core Pages & Functionality
 
 - **📊 Analytics Dashboard**: Comprehensive metrics dashboard with interactive charts displaying:
-  - Total users and growth trends
-  - Active sessions and session analytics
-  - Email verification rates
-  - Identity schema distribution
-  - System health monitoring
+  - Total users and growth trends over 30 days
+  - Active sessions and session analytics (last 7 days)
+  - Email verification rates and patterns
+  - Identity schema distribution analysis
+  - System health monitoring with real-time status
+  
 - **👥 Identity Management**: Complete user identity lifecycle management:
-  - **Create Identities**: Dynamic form generation based on Kratos schemas with validation
-  - **View Identities**: Searchable table with pagination and advanced filtering
+  - **Create Identities**: Dynamic form generation based on Kratos schemas with real-time validation
+  - **Browse Identities**: Clickable table with instant search, filtering, and smart pagination
+  - **Identity Details**: Comprehensive identity view with all information:
+    - Basic information (status, schema, timestamps)
+    - User traits (email, username, personal info)
+    - **Public Metadata**: JSON view of public metadata with syntax highlighting
+    - **Admin Metadata**: JSON view of admin metadata with syntax highlighting
+    - Identity-specific sessions with management capabilities
+    - Raw JSON data view for debugging
   - **Edit Identities**: Full identity trait editing with real-time validation
   - **Delete Identities**: Safe deletion with confirmation dialogs
   - **Recovery Links**: Generate secure recovery links for password reset
-- **🔐 Session Management**: Real-time session monitoring and control:
-  - Active session tracking with detailed information
-  - Session duration and activity analytics
-  - Session termination capabilities
-  - User device and location tracking
+  - **Bulk Session Management**: Delete all sessions for specific identities
+
+- **🔐 Session Management**: Advanced session monitoring and control system:
+  - **Session Overview**: Real-time session tracking with auto-search capabilities
+  - **Session Details**: Comprehensive session information including:
+    - Session metadata (ID, status, expiry, authentication methods)
+    - Associated identity details and traits
+    - Authentication methods and factors used
+    - Device information and user agent details
+    - Session activity and duration tracking
+  - **Session Actions**: 
+    - Extend session expiry with custom durations
+    - Revoke/disable sessions instantly
+    - Real-time table updates after actions
+  - **Advanced Search**: Auto-fetching search across all sessions with client-side filtering
+  - **Identity-Specific Sessions**: View and manage sessions for individual users
+
+- **📧 Message Monitoring**: Kratos courier message tracking and management:
+  - **Message Overview**: Monitor all email and SMS messages sent through Kratos
+  - **Message Details**: Comprehensive message information including:
+    - Message content and templates
+    - Delivery status and attempts
+    - Error tracking and diagnostics
+    - Dispatch information and timestamps
+  - **Advanced Filtering**: Filter by status (queued, processing, sent, abandoned)
+  - **Smart Search**: Auto-fetching search across recipient, subject, ID, template, and type
+  - **Real-time Updates**: Live message status monitoring
+
 - **📋 Schema Management**: Identity schema inspection and management:
   - View all configured identity schemas
   - Schema structure visualization with syntax highlighting
   - Schema properties and validation rules display
+  - JSON schema validation and format details
   - Read-only schema browsing (creation via API not supported)
-- **👤 User Profile**: User account management:
+
+- **👤 User Profile**: User account management and preferences:
   - Profile information display
   - Role-based access control (Admin/Viewer)
   - Account settings and preferences
+  - Theme switching (Light/Dark mode)
 
 ### 🚀 Technical Excellence
 
 - **Clean Architecture**: Feature-based organization with proper separation of concerns
-- **Smart Pagination**: Efficient data loading with date-based pagination stopping
-- **Real-time Updates**: TanStack Query for optimal data synchronization
+- **Smart Pagination**: Efficient data loading with auto-search and date-based pagination stopping
+- **Real-time Updates**: TanStack Query for optimal data synchronization and cache invalidation
+- **Auto-Search Technology**: Intelligent search that automatically fetches across multiple pages until target results found
 - **Responsive Design**: Mobile-first approach with Material-UI components
 - **Type Safety**: Full TypeScript coverage with strict type checking
-- **Performance Optimized**: Smart caching and efficient API calls
+- **Performance Optimized**: Smart caching, efficient API calls, and memoization strategies
 - **Form Validation**: Advanced form validation with real-time feedback using React JSON Schema Form
 - **Phone Number Support**: International phone number validation with libphonenumber-js
+- **Syntax Highlighting**: JSON syntax highlighting for metadata and raw data with dark/light mode support
+- **State Management**: Zustand for client-side state with persistence and TanStack Query for server state
 
 ### 🎨 User Experience
 
 - **Modern UI**: Clean, professional interface with Material-UI v7 design system
 - **Interactive Charts**: MUI X Charts for analytics visualization with real-time data
-- **Advanced Search**: Client-side and server-side search with instant filtering
-- **Visual Feedback**: Color-coded validation states and loading indicators
+- **Advanced Search**: Multi-page auto-search with client-side filtering and debounced input
+- **Clickable Interfaces**: Intuitive row-based navigation without cluttered action buttons
+- **Visual Feedback**: Color-coded validation states, loading indicators, and status chips
+- **Real-time Dialogs**: Modal dialogs with comprehensive details and immediate actions
+- **Contextual Actions**: Smart action buttons that appear based on data availability
+- **Loading States**: Skeleton loaders and dotted progress indicators for better perceived performance
 - **Accessibility**: WCAG compliant components with keyboard navigation support
+- **Dark/Light Mode**: Seamless theme switching with persistent preferences
 
 ## 🛠️ Technology Stack
 
@@ -69,8 +111,10 @@ A modern, responsive admin interface for [Ory Kratos](https://www.ory.sh/kratos/
 - **State Management**: Zustand + TanStack Query
 - **Language**: TypeScript
 - **Styling**: Tailwind CSS + Emotion
-- **API Client**: Ory Kratos Client
+- **API Client**: Ory Kratos Client (Identity, Session, Courier, Metadata APIs)
+- **Syntax Highlighting**: React Syntax Highlighter with theme support
 - **Authentication**: Custom auth system with persistent storage
+- **Search**: Advanced auto-search with multi-page fetching and client-side filtering
 
 ## 📋 Prerequisites
 
@@ -170,26 +214,31 @@ For a complete development environment with Kratos, check the [`dev/`](./dev) fo
 src/
 ├── app/                    # Next.js App Router pages
 │   ├── (app)/             # Protected application routes
-│   │   ├── dashboard/     # Analytics dashboard
-│   │   ├── identities/    # Identity management
-│   │   ├── sessions/      # Session monitoring
-│   │   ├── schemas/       # Schema management
-│   │   └── profile/       # User profile
-│   └── (auth)/            # Authentication pages
-├── components/            # Shared UI components
-│   ├── layout/           # Layout components (AdminLayout, Footer)
-│   ├── navigation/       # Navigation components
-│   └── ui/               # Reusable UI components
-├── features/             # Feature-based modules
-│   ├── analytics/        # Analytics functionality
-│   ├── auth/            # Authentication system
-│   ├── identities/      # Identity management
-│   ├── sessions/        # Session management
-│   └── schemas/         # Schema management
-├── services/            # API services layer
-│   └── kratos/          # Kratos API integration
-├── providers/           # React context providers
-└── styles/              # Global styles
+│   │   ├── dashboard/     # Analytics dashboard with interactive charts
+│   │   ├── identities/    # Identity management with CRUD operations
+│   │   │   ├── [id]/     # Individual identity details with metadata
+│   │   │   └── create/   # Dynamic identity creation forms
+│   │   ├── sessions/     # Session monitoring and management
+│   │   ├── messages/     # Kratos courier message monitoring
+│   │   ├── schemas/      # Schema management and visualization
+│   │   └── profile/      # User profile and preferences
+│   └── (auth)/           # Authentication pages
+├── components/           # Shared UI components
+│   ├── layout/          # Layout components (AdminLayout, Sidebar)
+│   ├── navigation/      # Navigation and routing components
+│   └── ui/              # Reusable UI components (loaders, dialogs)
+├── features/            # Feature-based modules
+│   ├── analytics/       # Dashboard analytics and charts
+│   ├── auth/           # Authentication system and guards
+│   ├── identities/     # Identity management (CRUD, search, metadata)
+│   ├── sessions/       # Session management (monitoring, actions)
+│   ├── messages/       # Message monitoring and tracking
+│   └── schemas/        # Schema management and visualization
+├── services/           # API services layer
+│   └── kratos/         # Kratos API integration
+│       └── endpoints/  # API endpoints (identities, sessions, courier)
+├── providers/          # React context providers (Theme, Query, Auth)
+└── styles/             # Global styles and themes
 ```
 
 ## 🎛️ Configuration
@@ -216,12 +265,49 @@ The application uses a mock authentication system with predefined users:
 
 ### Kratos Integration
 
-The application integrates with Kratos through:
+The application integrates with Kratos through multiple APIs:
 
-- **Identity API**: CRUD operations on user identities
-- **Session API**: Session management and monitoring
-- **Schema API**: Identity schema management
-- **Metadata API**: System metadata and health checks
+- **Identity API**: Complete CRUD operations on user identities with trait management
+- **Session API**: Comprehensive session monitoring, extension, and revocation
+- **Courier API**: Email/SMS message tracking and delivery status monitoring
+- **Metadata API**: System metadata, health checks, and configuration
+- **Schema API**: Identity schema management and validation rules
+
+## 📄 Available Pages & Routes
+
+### Public Routes
+- **`/login`** - Authentication page with role-based login (Admin/Viewer)
+
+### Protected Routes (Admin Only)
+- **`/dashboard`** - Analytics dashboard with comprehensive metrics and charts
+- **`/identities`** - Identity management with searchable table and pagination
+- **`/identities/create`** - Dynamic identity creation with schema-based forms
+- **`/identities/[id]`** - Detailed identity view with:
+  - Basic information and traits
+  - Public and admin metadata with JSON highlighting
+  - Identity-specific sessions management
+  - Edit, delete, and recovery capabilities
+- **`/sessions`** - Session monitoring and management with:
+  - Real-time session tracking
+  - Advanced auto-search capabilities
+  - Session details with extend/revoke actions
+- **`/messages`** - Kratos courier message monitoring with:
+  - Email and SMS message tracking
+  - Delivery status and error monitoring
+  - Advanced filtering and search
+- **`/schemas`** - Identity schema management and visualization
+- **`/profile`** - User profile and account settings
+
+### Key Features by Page
+
+| Page | Search | Actions | Real-time | Auto-fetch |
+|------|--------|---------|-----------|------------|
+| Dashboard | ❌ | ❌ | ✅ | ✅ |
+| Identities | ✅ | Edit, Delete, Recover | ✅ | ✅ |
+| Identity Details | ❌ | Edit, Delete, Recover, Sessions | ✅ | ❌ |
+| Sessions | ✅ | Extend, Revoke | ✅ | ✅ |
+| Messages | ✅ | View Details | ✅ | ✅ |
+| Schemas | ❌ | View Details | ❌ | ❌ |
 
 ## 🔧 Development
 
