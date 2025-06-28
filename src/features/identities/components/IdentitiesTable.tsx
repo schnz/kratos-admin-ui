@@ -19,8 +19,6 @@ import { useIdentities, useIdentitiesSearch } from '@/features/identities/hooks'
 import { Identity } from '@ory/kratos-client';
 import { useRouter } from 'next/navigation';
 import { DottedLoader } from '@/components/ui/DottedLoader';
-import { IdentityDeleteDialog } from './IdentityDeleteDialog';
-import { IdentityRecoveryDialog } from './IdentityRecoveryDialog';
 
 const IdentitiesTable: React.FC = () => {
   const router = useRouter();
@@ -29,10 +27,6 @@ const IdentitiesTable: React.FC = () => {
   const [pageSize, setPageSize] = useState(25);
   const [pageToken, setPageToken] = useState<string | undefined>(undefined);
   const [pageHistory, setPageHistory] = useState<(string | undefined)[]>([undefined]);
-  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
-  const [identityToDelete, setIdentityToDelete] = useState<Identity | null>(null);
-  const [recoveryDialogOpen, setRecoveryDialogOpen] = useState(false);
-  const [identityToRecover, setIdentityToRecover] = useState<Identity | null>(null);
 
   // Debounce search term to avoid API calls on every keystroke
   useEffect(() => {
@@ -175,53 +169,10 @@ const IdentitiesTable: React.FC = () => {
         return new Date(value as string).toLocaleString();
       },
     },
-    {
-      field: 'actions',
-      headerName: 'Actions',
-      flex: 1.2,
-      minWidth: 200,
-      sortable: false,
-      filterable: false,
-      renderCell: (params) => (
-        <Box sx={{ display: 'flex', gap: 0.5, flexWrap: 'wrap' }}>
-          <Button variant="text" size="small" color="primary" onClick={() => handleViewDetails(params.row.id)}>
-            View
-          </Button>
-          <Button variant="text" size="small" color="info" onClick={() => handleRecover(params.row.id)}>
-            Recover
-          </Button>
-          <Button variant="text" size="small" color="error" onClick={() => handleDelete(params.row.id)}>
-            Delete
-          </Button>
-        </Box>
-      ),
-    },
   ];
 
-  const handleViewDetails = (id: string) => {
-    router.push(`/identities/${id}`);
-  };
-
-  const handleDelete = (id: string) => {
-    const identity = displayedIdentities.find((identity: Identity) => identity.id === id);
-    if (identity) {
-      setIdentityToDelete(identity);
-      setDeleteDialogOpen(true);
-    }
-  };
-
-  const handleRecover = (id: string) => {
-    const identity = displayedIdentities.find((identity: Identity) => identity.id === id);
-    if (identity) {
-      setIdentityToRecover(identity);
-      setRecoveryDialogOpen(true);
-    }
-  };
-
-  const handleDeleteSuccess = () => {
-    // Refresh the data after successful delete
-    refetch();
-    setIdentityToDelete(null);
+  const handleRowClick = (params: any) => {
+    router.push(`/identities/${params.row.id}`);
   };
 
   const handleCreateNew = () => {
@@ -332,12 +283,17 @@ const IdentitiesTable: React.FC = () => {
         <DataGrid
           rows={displayedIdentities}
           columns={columns}
-          //checkboxSelection
-          onRowSelectionModelChange={() => {
-            // No row selection logic needed
-          }}
+          onRowClick={handleRowClick}
           hideFooterPagination
           showToolbar
+          sx={{
+            '& .MuiDataGrid-row': {
+              cursor: 'pointer',
+              '&:hover': {
+                backgroundColor: 'rgba(0, 0, 0, 0.04)',
+              },
+            },
+          }}
         />
       </Box>
 
@@ -377,27 +333,6 @@ const IdentitiesTable: React.FC = () => {
           </Button>
         </Box>
       </Box>
-
-      {/* Recovery Dialog */}
-      <IdentityRecoveryDialog
-        open={recoveryDialogOpen}
-        onClose={() => {
-          setRecoveryDialogOpen(false);
-          setIdentityToRecover(null);
-        }}
-        identity={identityToRecover}
-      />
-
-      {/* Delete Dialog */}
-      <IdentityDeleteDialog
-        open={deleteDialogOpen}
-        onClose={() => {
-          setDeleteDialogOpen(false);
-          setIdentityToDelete(null);
-        }}
-        identity={identityToDelete}
-        onSuccess={handleDeleteSuccess}
-      />
     </Paper>
   );
 };
