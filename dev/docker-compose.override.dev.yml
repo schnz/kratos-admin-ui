@@ -1,0 +1,21 @@
+services:
+  # Development Admin UI Service
+  kratos-admin-ui:
+    build:
+      context: ..
+      dockerfile: dev/Dockerfile
+    ports:
+      - '3000:3000'
+    environment:
+      - NODE_ENV=development
+      - KRATOS_ADMIN_URL=http://kratos:4434
+      - KRATOS_PUBLIC_URL=http://kratos:4433
+      - NEXT_PUBLIC_KRATOS_ADMIN_URL=http://localhost:4434
+      - NEXT_PUBLIC_KRATOS_PUBLIC_URL=http://localhost:4433
+    volumes:
+      - ../:/app
+      - /app/node_modules
+    networks:
+      - intranet
+    depends_on:
+      - kratos

@@ -28,11 +28,11 @@ The setup includes three identity schemas:
 
 ### Development Mode (Build from Source)
 
-1. Start all services:
+1. Start all services in development mode:
 
    ```bash
    cd dev
-   docker compose up -d
+   docker compose -f docker-compose.yml -f docker-compose.override.dev.yml up -d
    ```
 
 ### Production Mode (Use Pre-built Image)
@@ -49,7 +49,11 @@ The setup includes three identity schemas:
 2. Create test identities (first time only):
 
    ```bash
-   docker compose --profile init up init-identities
+   # For development mode
+   docker compose -f docker-compose.yml -f docker-compose.override.dev.yml --profile init up init-identities
+   
+   # For production mode
+   docker compose -f docker-compose.yml -f docker-compose.override.prod.yml --profile init up init-identities
    ```
 
    This creates 37 test identities:
@@ -66,62 +70,83 @@ The setup includes three identity schemas:
 
 4. Stop services:
    ```bash
-   docker compose down
+   # For development mode
+   docker compose -f docker-compose.yml -f docker-compose.override.dev.yml down
+   
+   # For production mode
+   docker compose -f docker-compose.yml -f docker-compose.override.prod.yml down
    ```
 
 ## Re-creating Test Data
 
 To recreate test identities:
 
+### Development Mode
 ```bash
 # Remove existing data
-docker compose down -v
+docker compose -f docker-compose.yml -f docker-compose.override.dev.yml down -v
 
 # Start services and create identities
-docker compose up -d
-docker compose --profile init up init-identities
+docker compose -f docker-compose.yml -f docker-compose.override.dev.yml up -d
+docker compose -f docker-compose.yml -f docker-compose.override.dev.yml --profile init up init-identities
+```
+
+### Production Mode
+```bash
+# Remove existing data
+docker compose -f docker-compose.yml -f docker-compose.override.prod.yml down -v
+
+# Start services and create identities
+docker compose -f docker-compose.yml -f docker-compose.override.prod.yml up -d
+docker compose -f docker-compose.yml -f docker-compose.override.prod.yml --profile init up init-identities
 ```
 
 ## Override Configurations
 
+### Admin UI Service Modes
+
+The admin UI service is separated into development and production modes using override files:
+
+#### Development Mode (`docker-compose.override.dev.yml`)
+- **Build from Source**: Builds the application from local source code
+- **Hot Reload**: Volume mounts for instant code changes
+- **Development Environment**: Optimized for development with faster rebuilds
+- **Environment Variables**: Includes `NEXT_PUBLIC_*` variables for client-side configuration
+
+#### Production Mode (`docker-compose.override.prod.yml`)
+- **Pre-built Image**: Uses `dhiagharsallaoui/kratos-admin-ui:latest` from Docker Hub
+- **Optimized Performance**: Production-optimized Next.js standalone build
+- **No Volume Mounts**: Runs entirely from the Docker image
+- **Runtime Configuration**: Environment variables configured at container runtime
+
 ### SELinux Systems
 
-For systems with SELinux enabled, use the SELinux override file:
+For systems with SELinux enabled, you can combine the SELinux override with either mode:
 
 ```bash
-docker compose -f docker-compose.yml -f docker-compose.override.selinux.yml up -d
-```
+# Development with SELinux
+docker compose -f docker-compose.yml -f docker-compose.override.dev.yml -f docker-compose.override.selinux.yml up -d
 
-### Production Docker Image
-
-To use the pre-built production Docker image instead of building from source:
-
-```bash
-docker compose -f docker-compose.yml -f docker-compose.override.prod.yml up -d
-```
-
-This is useful for:
-- Testing the production build locally
-- Faster startup (no build time)
-- Testing the exact image that will be deployed
-
-The production override:
-- Uses `dhiagharsallaoui/kratos-admin-ui:latest` from Docker Hub
-- Removes development volume mounts
-- Sets `NODE_ENV=production`
-- Uses runtime environment variables only
-
-### Combining Override Files
-
-You can combine multiple override files. For example, to use the production image on a SELinux system:
-
-```bash
+# Production with SELinux
 docker compose -f docker-compose.yml -f docker-compose.override.prod.yml -f docker-compose.override.selinux.yml up -d
 ```
 
+### Benefits of This Approach
+
+**Development Mode Benefits:**
+- Instant code changes without rebuilding
+- Full development environment with debugging tools
+- Source code mounted for real-time editing
+
+**Production Mode Benefits:**
+- Testing the exact production image locally
+- Faster startup (no build time required)
+- Identical to production deployment
+- Smaller attack surface (no development tools)
+
 ## Development
 
-The admin UI container mounts the source code as a volume, so changes are reflected immediately without rebuilding the container.
+When using development mode (`docker-compose.override.dev.yml`), the admin UI container mounts the source code as a volume, so changes are reflected immediately without rebuilding the container.
 
 ## Environment Variables
 
@@ -133,5 +158,15 @@ The admin UI is configured with:
 ## Troubleshooting
 
 - Ensure ports 3000, 4433, 4434, 4455, 4436, and 4437 are not in use
-- Check logs: `docker compose logs [service-name]`
-- Rebuild containers: `docker compose up --build`
+- Check logs: 
+  ```bash
+  # Development mode
+  docker compose -f docker-compose.yml -f docker-compose.override.dev.yml logs [service-name]
+  
+  # Production mode
+  docker compose -f docker-compose.yml -f docker-compose.override.prod.yml logs [service-name]
+  ```
+- Rebuild containers (development mode only):
+  ```bash
+  docker compose -f docker-compose.yml -f docker-compose.override.dev.yml up --build
+  ```

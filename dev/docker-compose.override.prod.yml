@@ -1,13 +1,14 @@
-version: '3.8'
-
 services:
-  # Override to use production Docker image instead of building from source
+  # Production Admin UI Service
   kratos-admin-ui:
     image: dhiagharsallaoui/kratos-admin-ui:latest
-    build: null  # Remove build context
-    volumes: []  # Remove development volume mounts
+    ports:
+      - '3000:3000'
     environment:
       - NODE_ENV=production
       - KRATOS_ADMIN_URL=http://kratos:4434
       - KRATOS_PUBLIC_URL=http://kratos:4433
-      # Remove NEXT_PUBLIC_ variables as they're not needed in production image
+    networks:
+      - intranet
+    depends_on:
+      - kratos
