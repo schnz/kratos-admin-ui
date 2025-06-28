@@ -75,19 +75,48 @@ A modern, responsive admin interface for [Ory Kratos](https://www.ory.sh/kratos/
   - Account settings and preferences
   - Theme switching (Light/Dark mode)
 
-### 🚀 Technical Excellence
+## 📸 Screenshots
 
-- **Clean Architecture**: Feature-based organization with proper separation of concerns
-- **Smart Pagination**: Efficient data loading with auto-search and date-based pagination stopping
-- **Real-time Updates**: TanStack Query for optimal data synchronization and cache invalidation
-- **Auto-Search Technology**: Intelligent search that automatically fetches across multiple pages until target results found
-- **Responsive Design**: Mobile-first approach with Material-UI components
-- **Type Safety**: Full TypeScript coverage with strict type checking
-- **Performance Optimized**: Smart caching, efficient API calls, and memoization strategies
-- **Form Validation**: Advanced form validation with real-time feedback using React JSON Schema Form
-- **Phone Number Support**: International phone number validation with libphonenumber-js
-- **Syntax Highlighting**: JSON syntax highlighting for metadata and raw data with dark/light mode support
-- **State Management**: Zustand for client-side state with persistence and TanStack Query for server state
+### Dashboard Analytics
+![Dashboard Overview](assets/dashboard-1.jpg)
+*Comprehensive analytics dashboard with real-time metrics and interactive charts*
+
+![Dashboard Metrics](assets/dashboard-2.jpg)
+*Detailed system health monitoring and growth trend analysis*
+
+### Identity Management
+![Identities Table](assets/identities.jpg)
+*Searchable identity table with clickable rows and advanced filtering*
+
+![Identity Details](assets/identity.jpg)
+*Comprehensive identity view with traits, metadata, and session management*
+
+![Identity Details Extended](assets/identity-2.jpg)
+*Extended identity information with JSON metadata and syntax highlighting*
+
+### Session Management
+![Sessions Table](assets/sessions.jpg)
+*Real-time session monitoring with auto-search capabilities*
+
+![Sessions Dark Mode](assets/sessions-dark.jpg)
+*Dark mode interface with seamless theme switching*
+
+![Session Details](assets/session.jpg)
+*Detailed session information with extend/revoke actions*
+
+### Message Monitoring
+![Messages Overview](assets/messages.jpg)
+*Kratos courier message tracking with advanced filtering*
+
+![Message Details](assets/message.jpg)
+*Comprehensive message details with delivery status and error tracking*
+
+### Schema Management
+![Schemas List](assets/schemas.jpg)
+*Identity schema browsing and management interface*
+
+![Schema Details](assets/schema.jpg)
+*JSON schema visualization with syntax highlighting and validation rules*
 
 ### 🎨 User Experience
 
