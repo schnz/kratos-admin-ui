@@ -121,15 +121,19 @@ The admin UI service is separated into development and production modes using ov
 
 ### SELinux Systems
 
-For systems with SELinux enabled, you can combine the SELinux override with either mode:
+For systems with SELinux enabled, use the appropriate SELinux override file for each mode:
 
 ```bash
 # Development with SELinux
-docker compose -f docker-compose.yml -f docker-compose.override.dev.yml -f docker-compose.override.selinux.yml up -d
+docker compose -f docker-compose.yml -f docker-compose.override.dev.yml -f docker-compose.override.selinux.dev.yml up -d
 
 # Production with SELinux
-docker compose -f docker-compose.yml -f docker-compose.override.prod.yml -f docker-compose.override.selinux.yml up -d
+docker compose -f docker-compose.yml -f docker-compose.override.prod.yml -f docker-compose.override.selinux.prod.yml up -d
 ```
+
+**SELinux Override Files:**
+- `docker-compose.override.selinux.dev.yml` - SELinux configuration for development mode (includes admin UI volume mounts)
+- `docker-compose.override.selinux.prod.yml` - SELinux configuration for production mode (only Kratos volumes, no admin UI mounts)
 
 ### Benefits of This Approach
 

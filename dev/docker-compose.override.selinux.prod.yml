@@ -1,0 +1,27 @@
+services:
+  kratos-migrate:
+    volumes:
+      - type: volume
+        source: kratos-sqlite
+        target: /var/lib/sqlite
+        read_only: false
+      - type: bind
+        source: ./kratos
+        target: /etc/config/kratos
+        bind:
+          selinux: z
+
+  kratos:
+    volumes:
+      - type: volume
+        source: kratos-sqlite
+        target: /var/lib/sqlite
+        read_only: false
+      - type: bind
+        source: ./kratos
+        target: /etc/config/kratos
+        bind:
+          selinux: z
+
+  # Note: kratos-admin-ui doesn't need SELinux config in production mode
+  # as it doesn't use any volume mounts
