@@ -68,14 +68,9 @@ export const SettingsDialog: React.FC<SettingsDialogProps> = ({ open, onClose })
     }
   };
 
-  const handleReset = () => {
-    resetSettings();
-    const defaultPublicUrl = process.env.NEXT_PUBLIC_KRATOS_PUBLIC_URL || 'http://localhost:4433';
-    const defaultAdminUrl = process.env.NEXT_PUBLIC_KRATOS_ADMIN_URL || 'http://localhost:4434';
-    reset({
-      publicUrl: defaultPublicUrl,
-      adminUrl: defaultAdminUrl,
-    });
+  const handleReset = async () => {
+    await resetSettings();
+    // The form will automatically update when kratosEndpoints change due to the useEffect
   };
 
   const handleClose = () => {

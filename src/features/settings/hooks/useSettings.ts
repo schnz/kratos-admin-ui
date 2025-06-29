@@ -1,6 +1,5 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-import { setKratosConfig } from '@/services/kratos/config';
 
 export interface KratosEndpoints {
   publicUrl: string;
@@ -12,17 +11,64 @@ export interface SettingsStoreState {
   setKratosEndpoints: (endpoints: KratosEndpoints) => void;
   resetToDefaults: () => void;
   isValidUrl: (url: string) => boolean;
+  isLoaded: boolean;
+  loadDefaults: () => Promise<void>;
+}
+
+let serverDefaults: KratosEndpoints | null = null;
+
+async function fetchServerDefaults(): Promise<KratosEndpoints> {
+  if (serverDefaults) {
+    return serverDefaults;
+  }
+
+  try {
+    const response = await fetch('/api/config');
+    if (response.ok) {
+      const config = await response.json();
+      serverDefaults = {
+        publicUrl: config.kratosPublicUrl,
+        adminUrl: config.kratosAdminUrl,
+      };
+      return serverDefaults;
+    }
+  } catch (error) {
+    console.warn('Failed to fetch server config:', error);
+  }
+
+  // Fallback to localhost
+  const fallback = {
+    publicUrl: 'http://localhost:4433',
+    adminUrl: 'http://localhost:4434',
+  };
+  serverDefaults = fallback;
+  return fallback;
 }
 
 const DEFAULT_ENDPOINTS: KratosEndpoints = {
-  publicUrl: process.env.NEXT_PUBLIC_KRATOS_PUBLIC_URL || 'http://localhost:4433',
-  adminUrl: process.env.NEXT_PUBLIC_KRATOS_ADMIN_URL || 'http://localhost:4434',
+  publicUrl: 'http://localhost:4433',
+  adminUrl: 'http://localhost:4434',
 };
 
 export const useSettingsStore = create<SettingsStoreState>()(
   persist(
     (set, get) => ({
       kratosEndpoints: DEFAULT_ENDPOINTS,
+      isLoaded: false,
+
+      loadDefaults: async () => {
+        const defaults = await fetchServerDefaults();
+        set({
+          kratosEndpoints: defaults,
+          isLoaded: true,
+        });
+
+        // Set cookies for middleware to read
+        if (typeof document !== 'undefined') {
+          document.cookie = `kratos-public-url=${encodeURIComponent(defaults.publicUrl)}; path=/; SameSite=Strict`;
+          document.cookie = `kratos-admin-url=${encodeURIComponent(defaults.adminUrl)}; path=/; SameSite=Strict`;
+        }
+      },
 
       setKratosEndpoints: (endpoints: KratosEndpoints) => {
         set({ kratosEndpoints: endpoints });
@@ -34,11 +80,8 @@ export const useSettingsStore = create<SettingsStoreState>()(
         }
       },
 
-      resetToDefaults: () => {
-        const defaultEndpoints = {
-          publicUrl: process.env.NEXT_PUBLIC_KRATOS_PUBLIC_URL || 'http://localhost:4433',
-          adminUrl: process.env.NEXT_PUBLIC_KRATOS_ADMIN_URL || 'http://localhost:4434',
-        };
+      resetToDefaults: async () => {
+        const defaultEndpoints = await fetchServerDefaults();
         set({ kratosEndpoints: defaultEndpoints });
 
         // Set cookies for middleware to read
@@ -63,13 +106,16 @@ export const useSettingsStore = create<SettingsStoreState>()(
         kratosEndpoints: state.kratosEndpoints,
       }),
       onRehydrateStorage: () => (state) => {
-        // When storage is rehydrated, set cookies for middleware to read
+        // When storage is rehydrated, check if we have stored endpoints
         if (state?.kratosEndpoints) {
           // Set cookies for middleware to read
           if (typeof document !== 'undefined') {
             document.cookie = `kratos-public-url=${encodeURIComponent(state.kratosEndpoints.publicUrl)}; path=/; SameSite=Strict`;
             document.cookie = `kratos-admin-url=${encodeURIComponent(state.kratosEndpoints.adminUrl)}; path=/; SameSite=Strict`;
           }
+        } else {
+          // If no stored endpoints, load defaults from server
+          state?.loadDefaults();
         }
       },
     }
@@ -81,3 +127,5 @@ export const useKratosEndpoints = () => useSettingsStore((state) => state.kratos
 export const useSetKratosEndpoints = () => useSettingsStore((state) => state.setKratosEndpoints);
 export const useResetSettings = () => useSettingsStore((state) => state.resetToDefaults);
 export const useIsValidUrl = () => useSettingsStore((state) => state.isValidUrl);
+export const useLoadDefaults = () => useSettingsStore((state) => state.loadDefaults);
+export const useSettingsLoaded = () => useSettingsStore((state) => state.isLoaded);
