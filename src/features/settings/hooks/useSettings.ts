@@ -45,15 +45,16 @@ async function fetchServerDefaults(): Promise<KratosEndpoints> {
   return fallback;
 }
 
-const DEFAULT_ENDPOINTS: KratosEndpoints = {
-  publicUrl: 'http://localhost:4433',
-  adminUrl: 'http://localhost:4434',
+// Initial endpoints - will be replaced by server defaults on load
+const INITIAL_ENDPOINTS: KratosEndpoints = {
+  publicUrl: '',
+  adminUrl: '',
 };
 
 export const useSettingsStore = create<SettingsStoreState>()(
   persist(
     (set, get) => ({
-      kratosEndpoints: DEFAULT_ENDPOINTS,
+      kratosEndpoints: INITIAL_ENDPOINTS,
       isLoaded: false,
 
       loadDefaults: async () => {
@@ -73,7 +74,7 @@ export const useSettingsStore = create<SettingsStoreState>()(
       setKratosEndpoints: (endpoints: KratosEndpoints) => {
         set({ kratosEndpoints: endpoints });
 
-        // Set cookies for middleware to read (client config stays as proxy paths)
+        // Set cookies for middleware to read
         if (typeof document !== 'undefined') {
           document.cookie = `kratos-public-url=${encodeURIComponent(endpoints.publicUrl)}; path=/; SameSite=Strict`;
           document.cookie = `kratos-admin-url=${encodeURIComponent(endpoints.adminUrl)}; path=/; SameSite=Strict`;

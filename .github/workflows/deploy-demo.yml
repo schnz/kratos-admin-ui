@@ -2,7 +2,7 @@ name: Deploy Live Demo
 
 on:
   workflow_run:
-    workflows: ["Build and Push Image"]
+    workflows: ['Build and Push Image']
     types:
       - completed
     branches: [main]
@@ -13,7 +13,7 @@ jobs:
     name: Deploy to Live Demo Server
     runs-on: ubuntu-latest
     if: ${{ github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success' }}
-    
+
     steps:
       - name: Setup SSH key
         run: |

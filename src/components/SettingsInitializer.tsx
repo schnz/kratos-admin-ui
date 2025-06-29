@@ -10,7 +10,12 @@ export function SettingsInitializer() {
 
   useEffect(() => {
     // Check if we need to load defaults
-    const shouldLoadDefaults = !isLoaded && (endpoints.publicUrl === 'http://localhost:4433' || endpoints.adminUrl === 'http://localhost:4434');
+    const shouldLoadDefaults =
+      !isLoaded &&
+      (!endpoints.publicUrl ||
+        !endpoints.adminUrl ||
+        endpoints.publicUrl === 'http://localhost:4433' ||
+        endpoints.adminUrl === 'http://localhost:4434');
 
     if (shouldLoadDefaults) {
       loadDefaults();
