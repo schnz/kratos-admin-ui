@@ -292,6 +292,7 @@ src/
 You can configure Kratos endpoints in two ways:
 
 #### 1. Via Settings Dialog (Recommended)
+
 - Click the settings icon (⚙️) in the application header
 - Enter your Kratos Public URL and Admin URL
 - Settings are stored in browser localStorage and take effect immediately

@@ -6,7 +6,6 @@ async function proxyToKratos(request: NextRequest, baseUrl: string, pathPrefix: 
     const targetPath = request.nextUrl.pathname.replace(pathPrefix, '');
     const targetUrl = `${baseUrl}${targetPath}${request.nextUrl.search}`;
 
-
     const response = await kratosHttpClient.fetch(targetUrl, {
       method: request.method,
       headers: Object.fromEntries(

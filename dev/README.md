@@ -51,7 +51,7 @@ The setup includes three identity schemas:
    ```bash
    # For development mode
    docker compose -f docker-compose.yml -f docker-compose.override.dev.yml --profile init up init-identities
-   
+
    # For production mode
    docker compose -f docker-compose.yml -f docker-compose.override.prod.yml --profile init up init-identities
    ```
@@ -69,10 +69,11 @@ The setup includes three identity schemas:
    - MailSlurper: http://localhost:4436
 
 4. Stop services:
+
    ```bash
    # For development mode
    docker compose -f docker-compose.yml -f docker-compose.override.dev.yml down
-   
+
    # For production mode
    docker compose -f docker-compose.yml -f docker-compose.override.prod.yml down
    ```
@@ -82,6 +83,7 @@ The setup includes three identity schemas:
 To recreate test identities:
 
 ### Development Mode
+
 ```bash
 # Remove existing data
 docker compose -f docker-compose.yml -f docker-compose.override.dev.yml down -v
@@ -92,6 +94,7 @@ docker compose -f docker-compose.yml -f docker-compose.override.dev.yml --profil
 ```
 
 ### Production Mode
+
 ```bash
 # Remove existing data
 docker compose -f docker-compose.yml -f docker-compose.override.prod.yml down -v
@@ -108,12 +111,14 @@ docker compose -f docker-compose.yml -f docker-compose.override.prod.yml --profi
 The admin UI service is separated into development and production modes using override files:
 
 #### Development Mode (`docker-compose.override.dev.yml`)
+
 - **Build from Source**: Builds the application from local source code
 - **Hot Reload**: Volume mounts for instant code changes
 - **Development Environment**: Optimized for development with faster rebuilds
 - **Environment Variables**: Includes `NEXT_PUBLIC_*` variables for client-side configuration
 
 #### Production Mode (`docker-compose.override.prod.yml`)
+
 - **Pre-built Image**: Uses `dhiagharsallaoui/kratos-admin-ui:latest` from Docker Hub
 - **Optimized Performance**: Production-optimized Next.js standalone build
 - **No Volume Mounts**: Runs entirely from the Docker image
@@ -132,17 +137,20 @@ docker compose -f docker-compose.yml -f docker-compose.override.prod.yml -f dock
 ```
 
 **SELinux Override Files:**
+
 - `docker-compose.override.selinux.dev.yml` - SELinux configuration for development mode (includes admin UI volume mounts)
 - `docker-compose.override.selinux.prod.yml` - SELinux configuration for production mode (only Kratos volumes, no admin UI mounts)
 
 ### Benefits of This Approach
 
 **Development Mode Benefits:**
+
 - Instant code changes without rebuilding
 - Full development environment with debugging tools
 - Source code mounted for real-time editing
 
 **Production Mode Benefits:**
+
 - Testing the exact production image locally
 - Faster startup (no build time required)
 - Identical to production deployment
@@ -162,14 +170,16 @@ The admin UI is configured with:
 ## Troubleshooting
 
 - Ensure ports 3000, 4433, 4434, 4455, 4436, and 4437 are not in use
-- Check logs: 
+- Check logs:
+
   ```bash
   # Development mode
   docker compose -f docker-compose.yml -f docker-compose.override.dev.yml logs [service-name]
-  
+
   # Production mode
   docker compose -f docker-compose.yml -f docker-compose.override.prod.yml logs [service-name]
   ```
+
 - Rebuild containers (development mode only):
   ```bash
   docker compose -f docker-compose.yml -f docker-compose.override.dev.yml up --build

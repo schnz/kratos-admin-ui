@@ -13,10 +13,10 @@
           "ory.sh/kratos": {
             "credentials": {
               "password": {
-                "identifier": true
+                "identifier": false
               },
               "webauthn": {
-                "identifier": true
+                "identifier": false
               },
               "totp": {
                 "account_name": true
