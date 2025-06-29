@@ -2,6 +2,10 @@
 
 A modern, responsive admin interface for [Ory Kratos](https://www.ory.sh/kratos/) identity management system. Built with Next.js 14, Material-UI v7, and TypeScript.
 
+## 🌐 Live Demo
+
+Experience the admin interface live at: **[https://admin.ory.cloud-ctl.com](https://admin.ory.cloud-ctl.com)**
+
 > **🚨 SECURITY WARNING**: This interface should **NOT** be exposed to the public internet. It uses mock authentication for development purposes and is **NOT secure for production use**. Always deploy behind proper authentication and access controls.
 
 > **⚠️ Development Phase**: This project is currently in active development. Features may change and breaking updates can occur. We encourage testing and feedback, but recommend caution for production use.
