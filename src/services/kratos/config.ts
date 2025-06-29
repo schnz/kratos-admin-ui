@@ -11,7 +11,7 @@ let serverConfig: KratosConfig = {
   basePath: process.env.BASE_PATH || '',
 };
 
-// For client-side API calls through the proxy
+// For client-side API calls through the middleware proxy
 let clientConfig: KratosConfig = {
   kratosPublicUrl: '/api/kratos',
   kratosAdminUrl: '/api/kratos-admin',

@@ -13,3 +13,6 @@ export * as Sessions from './sessions';
 
 // Schemas
 export * as Schemas from './schemas';
+
+// Settings
+export * as Settings from './settings';

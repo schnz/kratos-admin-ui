@@ -20,7 +20,6 @@ A modern, responsive admin interface for [Ory Kratos](https://www.ory.sh/kratos/
   - Email verification rates and patterns
   - Identity schema distribution analysis
   - System health monitoring with real-time status
-  
 - **👥 Identity Management**: Complete user identity lifecycle management:
   - **Create Identities**: Dynamic form generation based on Kratos schemas with real-time validation
   - **Browse Identities**: Clickable table with instant search, filtering, and smart pagination
@@ -44,7 +43,7 @@ A modern, responsive admin interface for [Ory Kratos](https://www.ory.sh/kratos/
     - Authentication methods and factors used
     - Device information and user agent details
     - Session activity and duration tracking
-  - **Session Actions**: 
+  - **Session Actions**:
     - Extend session expiry with custom durations
     - Revoke/disable sessions instantly
     - Real-time table updates after actions
@@ -75,48 +74,64 @@ A modern, responsive admin interface for [Ory Kratos](https://www.ory.sh/kratos/
   - Account settings and preferences
   - Theme switching (Light/Dark mode)
 
+- **⚙️ Settings & Configuration**: Flexible endpoint configuration system:
+  - Real-time Kratos endpoint configuration via UI
+  - URL validation and error handling
+  - Persistent settings stored in browser localStorage
+  - Reset to defaults functionality
+
 ## 📸 Screenshots
 
 ### Dashboard Analytics
+
 ![Dashboard Overview](assets/dashboard-1.jpg)
-*Comprehensive analytics dashboard with real-time metrics and interactive charts*
+_Comprehensive analytics dashboard with real-time metrics and interactive charts_
 
 ![Dashboard Metrics](assets/dashboard-2.jpg)
-*Detailed system health monitoring and growth trend analysis*
+_Detailed system health monitoring and growth trend analysis_
 
 ### Identity Management
+
 ![Identities Table](assets/identities.jpg)
-*Searchable identity table with clickable rows and advanced filtering*
+_Searchable identity table with clickable rows and advanced filtering_
 
 ![Identity Details](assets/identity.jpg)
-*Comprehensive identity view with traits, metadata, and session management*
+_Comprehensive identity view with traits, metadata, and session management_
 
 ![Identity Details Extended](assets/identity-2.jpg)
-*Extended identity information with JSON metadata and syntax highlighting*
+_Extended identity information with JSON metadata and syntax highlighting_
 
 ### Session Management
+
 ![Sessions Table](assets/sessions.jpg)
-*Real-time session monitoring with auto-search capabilities*
+_Real-time session monitoring with auto-search capabilities_
 
 ![Sessions Dark Mode](assets/sessions-dark.jpg)
-*Dark mode interface with seamless theme switching*
+_Dark mode interface with seamless theme switching_
 
 ![Session Details](assets/session.jpg)
-*Detailed session information with extend/revoke actions*
+_Detailed session information with extend/revoke actions_
 
 ### Message Monitoring
+
 ![Messages Overview](assets/messages.jpg)
-*Kratos courier message tracking with advanced filtering*
+_Kratos courier message tracking with advanced filtering_
 
 ![Message Details](assets/message.jpg)
-*Comprehensive message details with delivery status and error tracking*
+_Comprehensive message details with delivery status and error tracking_
 
 ### Schema Management
+
 ![Schemas List](assets/schemas.jpg)
-*Identity schema browsing and management interface*
+_Identity schema browsing and management interface_
 
 ![Schema Details](assets/schema.jpg)
-*JSON schema visualization with syntax highlighting and validation rules*
+_JSON schema visualization with syntax highlighting and validation rules_
+
+### Settings & Configuration
+
+![Settings Dialog](assets/settings.jpg)
+_Kratos endpoint configuration via the settings dialog with real-time validation_
 
 ### 🎨 User Experience
 
@@ -272,7 +287,17 @@ src/
 
 ## 🎛️ Configuration
 
-### Environment Variables
+### Kratos Endpoint Configuration
+
+You can configure Kratos endpoints in two ways:
+
+#### 1. Via Settings Dialog (Recommended)
+- Click the settings icon (⚙️) in the application header
+- Enter your Kratos Public URL and Admin URL
+- Settings are stored in browser localStorage and take effect immediately
+- Supports both localhost URLs and remote endpoints
+
+#### 2. Via Environment Variables
 
 | Variable            | Description           | Default                 |
 | ------------------- | --------------------- | ----------------------- |
@@ -280,6 +305,8 @@ src/
 | `KRATOS_ADMIN_URL`  | Kratos admin API URL  | `http://localhost:4434` |
 | `BASE_PATH`         | Application base path | `/`                     |
 | `NODE_ENV`          | Environment mode      | `development`           |
+
+> **💡 Tip**: The settings dialog provides a more flexible way to configure endpoints without restarting the application.
 
 ### Authentication
 
@@ -305,9 +332,11 @@ The application integrates with Kratos through multiple APIs:
 ## 📄 Available Pages & Routes
 
 ### Public Routes
+
 - **`/login`** - Authentication page with role-based login (Admin/Viewer)
 
 ### Protected Routes (Admin Only)
+
 - **`/dashboard`** - Analytics dashboard with comprehensive metrics and charts
 - **`/identities`** - Identity management with searchable table and pagination
 - **`/identities/create`** - Dynamic identity creation with schema-based forms
@@ -329,14 +358,14 @@ The application integrates with Kratos through multiple APIs:
 
 ### Key Features by Page
 
-| Page | Search | Actions | Real-time | Auto-fetch |
-|------|--------|---------|-----------|------------|
-| Dashboard | ❌ | ❌ | ✅ | ✅ |
-| Identities | ✅ | Edit, Delete, Recover | ✅ | ✅ |
-| Identity Details | ❌ | Edit, Delete, Recover, Sessions | ✅ | ❌ |
-| Sessions | ✅ | Extend, Revoke | ✅ | ✅ |
-| Messages | ✅ | View Details | ✅ | ✅ |
-| Schemas | ❌ | View Details | ❌ | ❌ |
+| Page             | Search | Actions                         | Real-time | Auto-fetch |
+| ---------------- | ------ | ------------------------------- | --------- | ---------- |
+| Dashboard        | ❌     | ❌                              | ✅        | ✅         |
+| Identities       | ✅     | Edit, Delete, Recover           | ✅        | ✅         |
+| Identity Details | ❌     | Edit, Delete, Recover, Sessions | ✅        | ❌         |
+| Sessions         | ✅     | Extend, Revoke                  | ✅        | ✅         |
+| Messages         | ✅     | View Details                    | ✅        | ✅         |
+| Schemas          | ❌     | View Details                    | ❌        | ❌         |
 
 ## 🔧 Development
 
@@ -442,7 +471,7 @@ The Docker image supports runtime configuration through environment variables, m
 ### Common Issues
 
 1. **Kratos Connection Failed**
-   - Verify `KRATOS_PUBLIC_URL` and `KRATOS_ADMIN_URL` are correct
+   - Use the settings dialog (⚙️ icon) to verify and update Kratos endpoint URLs
    - Check network connectivity between services
    - Ensure Kratos is running and accessible
 

@@ -33,6 +33,7 @@ import {
   Logout,
   GitHub,
   Message,
+  Settings,
 } from '@mui/icons-material';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
@@ -40,6 +41,7 @@ import { useTheme } from '@/providers/ThemeProvider';
 import { useUser, useLogout } from '@/features/auth/hooks/useAuth';
 import { UserRole } from '@/features/auth';
 import { ProtectedRoute } from '@/features/auth/components/ProtectedRoute';
+import { SettingsDialog } from '@/features/settings';
 
 const drawerWidth = 240;
 
@@ -50,6 +52,7 @@ interface AdminLayoutProps {
 export const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
   const [open, setOpen] = useState(true);
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
+  const [settingsOpen, setSettingsOpen] = useState(false);
   const muiTheme = useMuiTheme();
   const isMobile = useMediaQuery(muiTheme.breakpoints.down('md'));
   const pathname = usePathname();
@@ -122,6 +125,11 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
                   onClick={() => window.open('https://github.com/dhia-gharsallaoui/kratos-admin-ui', '_blank')}
                 >
                   <GitHub />
+                </IconButton>
+              </Tooltip>
+              <Tooltip title="Settings">
+                <IconButton color="inherit" sx={{ mr: 1 }} onClick={() => setSettingsOpen(true)}>
+                  <Settings />
                 </IconButton>
               </Tooltip>
               <Tooltip title="Toggle theme">
@@ -231,6 +239,7 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
           <Toolbar />
           <Box sx={{ flexGrow: 1, p: 3 }}>{children}</Box>
         </Box>
+        <SettingsDialog open={settingsOpen} onClose={() => setSettingsOpen(false)} />
       </Box>
     </ProtectedRoute>
   );
