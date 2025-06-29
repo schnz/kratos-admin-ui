@@ -1,0 +1,140 @@
+services:
+  nginx-proxy:
+    image: nginxproxy/nginx-proxy:latest
+    container_name: nginx-proxy
+    ports:
+      - '80:80'
+      - '443:443'
+    volumes:
+      - /var/run/docker.sock:/tmp/docker.sock:ro
+      - certs:/etc/nginx/certs
+      - vhost:/etc/nginx/vhost.d
+      - html:/usr/share/nginx/html
+    networks:
+      - web
+      - intranet
+
+  letencrypt-autogen:
+    image: nginxproxy/acme-companion:2.2
+    container_name: letencrypt-autogen
+    environment:
+      DEFAULT_EMAIL: info@cloud-ctl.com
+    volumes_from:
+      - nginx-proxy
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - acme:/etc/acme.sh
+    networks:
+      - web
+      - intranet
+    restart: unless-stopped
+    depends_on:
+      - nginx-proxy
+
+  # Kratos Migration Service
+  kratos-migrate:
+    image: oryd/kratos:v1.3.1
+    environment:
+      - DSN=sqlite:///var/lib/sqlite/db.sqlite?_fk=true&mode=rwc
+    volumes:
+      - type: volume
+        source: kratos-sqlite
+        target: /var/lib/sqlite
+        read_only: false
+      - type: bind
+        source: ./config/kratos
+        target: /etc/config/kratos
+    command: -c /etc/config/kratos/kratos.yml migrate sql -e --yes
+    restart: on-failure
+    networks:
+      - intranet
+
+  # Kratos Main Service
+  kratos:
+    depends_on:
+      - kratos-migrate
+    image: oryd/kratos:v1.3.1
+    environment:
+      DSN: sqlite:///var/lib/sqlite/db.sqlite?_fk=true
+      VIRTUAL_HOST: kratos.ory.cloud-ctl.com
+      VIRTUAL_PORT: 4433
+      LETSENCRYPT_HOST: kratos.ory.cloud-ctl.com
+      LETSENCRYPT_EMAIL: info@cloud-ctl.com
+    command: serve -c /etc/config/kratos/kratos.yml
+    volumes:
+      - type: volume
+        source: kratos-sqlite
+        target: /var/lib/sqlite
+        read_only: false
+      - type: bind
+        source: ./config/kratos
+        target: /etc/config/kratos
+    networks:
+      - web
+      - intranet
+    restart: unless-stopped
+
+  # Kratos Admin UI (Production Image)
+  kratos-admin-ui:
+    image: dhiagharsallaoui/kratos-admin-ui:latest
+    environment:
+      VIRTUAL_HOST: admin.ory.cloud-ctl.com
+      VIRTUAL_PORT: 3000
+      LETSENCRYPT_HOST: admin.ory.cloud-ctl.com
+      LETSENCRYPT_EMAIL: info@cloud-ctl.com
+      NEXT_PUBLIC_KRATOS_PUBLIC_URL: https://kratos.${DOMAIN}
+      NEXT_PUBLIC_KRATOS_ADMIN_URL: http://kratos:4434
+      NEXT_PUBLIC_APP_NAME: '${APP_NAME:-Kratos Admin UI}'
+      NEXT_PUBLIC_APP_URL: https://admin.${DOMAIN}
+      NODE_ENV: production
+    networks:
+      - web
+      - intranet
+    restart: unless-stopped
+    depends_on:
+      - kratos
+
+  # SMTP Server for Email Delivery
+  smtp:
+    image: mailhog/mailhog:latest
+    networks:
+      - web
+      - intranet
+    restart: unless-stopped
+    environment:
+      VIRTUAL_HOST: mail.ory.cloud-ctl.com
+      VIRTUAL_PORT: 8025
+      LETSENCRYPT_HOST: mail.ory.cloud-ctl.com
+      LETSENCRYPT_EMAIL: info@cloud-ctl.com
+
+  # Initialize test identities
+  init-identities:
+    image: curlimages/curl:latest
+    depends_on:
+      - kratos
+    volumes:
+      - type: bind
+        source: ./init-identities.sh
+        target: /init-identities.sh
+    environment:
+      - DOMAIN=${DOMAIN}
+    networks:
+      - intranet
+    command: sh /init-identities.sh
+    restart: 'no'
+    profiles:
+      - init
+
+networks:
+  web:
+    external: true
+  intranet:
+    driver: bridge
+
+volumes:
+  letsencrypt:
+  kratos-sqlite:
+  certs:
+  vhost:
+  html:
+  acme:
