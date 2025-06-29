@@ -13,9 +13,11 @@ import {
   InputLabel,
   Select,
   MenuItem,
+  Chip,
 } from '@mui/material';
 import { Add, Search, Refresh, NavigateBefore, NavigateNext } from '@mui/icons-material';
 import { useIdentities, useIdentitiesSearch } from '@/features/identities/hooks';
+import { useSchemas } from '@/features/schemas/hooks';
 import { Identity } from '@ory/kratos-client';
 import { useRouter } from 'next/navigation';
 import { DottedLoader } from '@/components/ui/DottedLoader';
@@ -56,6 +58,8 @@ const IdentitiesTable: React.FC = () => {
     searchTerm: debouncedSearchTerm,
   });
 
+  const { data: schemas } = useSchemas();
+
   // Always use regular data for base identities, never show search loading
   const data = regularData;
   const isLoading = regularLoading;
@@ -72,6 +76,61 @@ const IdentitiesTable: React.FC = () => {
   const searchResults = searchData?.identities || [];
   const searchComplete = !searchLoading && isSearching;
 
+  // Helper function to get schema name
+  const getSchemaName = React.useCallback(
+    (identity: Identity) => {
+      const schema = schemas?.find((s) => s.id === identity.schema_id);
+      const schemaObj = schema?.schema as any;
+      return schemaObj?.title || `Schema ${identity.schema_id?.substring(0, 8)}...` || 'Unknown';
+    },
+    [schemas]
+  );
+
+  // Helper function to get identifier from identity based on schema
+  const getIdentifier = React.useCallback(
+    (identity: Identity) => {
+      const traits = identity.traits as any;
+      const schema = schemas?.find((s) => s.id === identity.schema_id);
+      const schemaObj = schema?.schema as any;
+
+      if (!schemaObj?.properties?.traits?.properties) {
+        // Fallback if schema not available
+        return traits?.email || traits?.username || traits?.phone || 'N/A';
+      }
+
+      const traitProperties = schemaObj.properties.traits.properties;
+      const identifierFields: string[] = [];
+
+      // Extract fields that are marked as identifiers in the schema
+      Object.keys(traitProperties).forEach((fieldName) => {
+        const field = traitProperties[fieldName];
+        const kratosConfig = field?.['ory.sh/kratos'];
+
+        if (kratosConfig?.credentials) {
+          // Check if any credential type has identifier: true
+          const credentialTypes = Object.keys(kratosConfig.credentials);
+          const hasIdentifier = credentialTypes.some((credType) => kratosConfig.credentials[credType]?.identifier === true);
+
+          if (hasIdentifier) {
+            identifierFields.push(fieldName);
+          }
+        }
+      });
+
+      // Get the first non-null identifier value from the identity traits
+      for (const fieldName of identifierFields) {
+        const value = traits?.[fieldName];
+        if (value) {
+          return String(value);
+        }
+      }
+
+      // Fallback if no schema-defined identifiers found
+      return traits?.email || traits?.username || traits?.phone || 'N/A';
+    },
+    [schemas]
+  );
+
   // Apply instant client-side filtering while typing
   const clientFilteredIdentities = React.useMemo(() => {
     if (!searchTerm.trim()) return baseIdentities;
@@ -80,22 +139,24 @@ const IdentitiesTable: React.FC = () => {
     return baseIdentities.filter((identity: Identity) => {
       const traits = identity.traits as any;
       const email = String(traits?.email || '');
-      const username = String(traits?.username || '');
       const firstName = String(traits?.first_name || traits?.firstName || '');
       const lastName = String(traits?.last_name || traits?.lastName || '');
       const name = String(traits?.name || '');
       const id = String(identity.id || '');
+      const schemaName = getSchemaName(identity);
+      const identifier = getIdentifier(identity);
 
       return (
         id.toLowerCase().includes(searchLower) ||
         email.toLowerCase().includes(searchLower) ||
-        username.toLowerCase().includes(searchLower) ||
         firstName.toLowerCase().includes(searchLower) ||
         lastName.toLowerCase().includes(searchLower) ||
-        name.toLowerCase().includes(searchLower)
+        name.toLowerCase().includes(searchLower) ||
+        schemaName.toLowerCase().includes(searchLower) ||
+        identifier.toLowerCase().includes(searchLower)
       );
     });
-  }, [baseIdentities, searchTerm]);
+  }, [baseIdentities, searchTerm, getSchemaName, getIdentifier]);
 
   // Use search results if search is complete and we have better results
   const shouldUseSearchResults = searchComplete && searchResults.length > clientFilteredIdentities.length;
@@ -115,23 +176,34 @@ const IdentitiesTable: React.FC = () => {
       ),
     },
     {
-      field: 'email',
-      headerName: 'Email',
+      field: 'identifier',
+      headerName: 'Identifier',
       flex: 1.5,
       minWidth: 220,
       valueGetter: (_, row) => {
-        const traits = row.traits as any;
-        return traits?.email || 'N/A';
+        return getIdentifier(row);
       },
     },
     {
-      field: 'username',
-      headerName: 'Username',
+      field: 'schema_name',
+      headerName: 'Schema',
       flex: 1,
       minWidth: 140,
-      valueGetter: (_, row) => {
-        const traits = row.traits as any;
-        return traits?.username || 'N/A';
+      renderCell: (params) => {
+        const schemaName = getSchemaName(params.row);
+        return (
+          <Chip
+            label={schemaName}
+            size="small"
+            sx={{
+              borderRadius: 'var(--radius)',
+              fontWeight: 500,
+              background: 'var(--primary)',
+              color: 'var(--primary-foreground)',
+              fontSize: '0.75rem',
+            }}
+          />
+        );
       },
     },
     {
@@ -140,15 +212,17 @@ const IdentitiesTable: React.FC = () => {
       flex: 0.5,
       minWidth: 100,
       renderCell: (params) => (
-        <Tooltip title={params.value}>
-          <span
-            style={{
-              color: params.value === 'active' ? 'green' : params.value === 'inactive' ? 'red' : 'orange',
-            }}
-          >
-            {params.value}
-          </span>
-        </Tooltip>
+        <Chip
+          label={params.value === 'active' ? 'Active' : 'Inactive'}
+          color={params.value === 'active' ? 'success' : 'default'}
+          size="small"
+          sx={{
+            borderRadius: 'var(--radius)',
+            fontWeight: 500,
+            background: params.value === 'active' ? '#10b981' : 'var(--muted)',
+            color: params.value === 'active' ? 'white' : 'var(--muted-foreground)',
+          }}
+        />
       ),
     },
     {
@@ -244,7 +318,7 @@ const IdentitiesTable: React.FC = () => {
 
       <Box display="flex" justifyContent="space-between" alignItems="center" mb={3}>
         <TextField
-          placeholder="Search identities (ID, email, username, name)..."
+          placeholder="Search identities (ID, identifier, schema, name)..."
           variant="outlined"
           size="small"
           value={searchTerm}
