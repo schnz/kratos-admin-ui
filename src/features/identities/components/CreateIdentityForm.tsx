@@ -14,7 +14,7 @@ import {
   Autocomplete,
 } from '@mui/material';
 import { Save, Cancel } from '@mui/icons-material';
-import Form from '@rjsf/core';
+import Form from '@rjsf/mui';
 import { RJSFSchema, UiSchema, WidgetProps, FieldTemplateProps, ObjectFieldTemplateProps, SubmitButtonProps } from '@rjsf/utils';
 import validator from '@rjsf/validator-ajv8';
 
