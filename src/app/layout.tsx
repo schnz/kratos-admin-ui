@@ -31,7 +31,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className={inter.className}>
-      <body>
+      <body suppressHydrationWarning={true}>
         <AppRouterCacheProvider options={{ enableCssLayer: true }}>
           <ThemeRegistry>
             <Providers>{children}</Providers>
