@@ -7,7 +7,8 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "format": "prettier --write ."
+    "format": "prettier --write .",
+    "docker:dev": "docker compose -f dev/docker-compose.yml -f dev/docker-compose.override.dev.yml up"
   },
   "dependencies": {
     "@emotion/react": "^11.14.0",
